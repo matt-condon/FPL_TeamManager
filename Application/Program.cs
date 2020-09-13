@@ -1,5 +1,6 @@
 ﻿using FplClient.Clients;
 using FplClient.Data;
+using FPLTeamManager.Application.Builders;
 using FPLTeamManager.Infrastructure.Extensions;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,23 @@ namespace FPLTeamManager.Application
         static async Task Main(string[] args)
         {
             var players = await GetTopPlayersAsync();
-            foreach (var player in players)
+
+            var dictionaryBuilder = new PlayerDictionaryBuilder();
+            var playerDictionary = dictionaryBuilder.BuildFilteredPlayerDictionary(players);
+
+
+            Console.WriteLine($"Number of players (after filter): {CountNumberOfPlayers(playerDictionary)}");
+
+            foreach (var position in playerDictionary)
             {
-                Console.WriteLine($"{player.GetPartialPlayerString()}");
+                Console.WriteLine($"Position: {position.Key}");
+                Console.WriteLine("");
+
+                foreach (var player in position.Value)
+                {
+                    Console.WriteLine($"{player.GetPartialPlayerString()}");
+                }
+                Console.WriteLine("");
             }
         }
 
@@ -24,8 +39,16 @@ namespace FPLTeamManager.Application
         {
             var client = new FplPlayerClient(new HttpClient());
             var players = await client.GetAllPlayers();
-            Console.WriteLine(players.Count);
-            return players.OrderByDescending(x => x.TotalPoints).Take(10);
+            Console.WriteLine($"Number of players: {players.Count}");
+            return players.OrderByDescending(x => x.TotalPoints).Take(12);
+        }
+
+        private static int CountNumberOfPlayers(Dictionary<FplPlayerPosition, List<FplPlayer>> playerDictionary)
+        {
+            return playerDictionary.Values
+                .SelectMany(list => list)
+                .Distinct()
+                .Count();
         }
     }
 }
