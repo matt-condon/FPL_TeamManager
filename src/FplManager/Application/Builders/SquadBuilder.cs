@@ -1,12 +1,12 @@
 ﻿using FplClient.Data;
-using FPLTeamManager.Application.Services;
-using FPLTeamManager.Infrastructure.Extensions;
-using FPLTeamManager.Infrastructure.Models;
+using FplManager.Application.Services;
+using FplManager.Infrastructure.Extensions;
+using FplManager.Infrastructure.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FPLTeamManager.Application.Builders
+namespace FplManager.Application.Builders
 {
     public class SquadBuilder
     {

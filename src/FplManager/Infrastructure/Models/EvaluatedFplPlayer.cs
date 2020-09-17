@@ -1,6 +1,6 @@
 ﻿using FplClient.Data;
 
-namespace FPLTeamManager.Infrastructure.Models
+namespace FplManager.Infrastructure.Models
 {
     public class EvaluatedFplPlayer
     {

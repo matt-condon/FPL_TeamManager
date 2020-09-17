@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FPLTeamManager.Infrastructure.Extensions
+namespace FplManager.Infrastructure.Extensions
 {
     public static class StringExtensions
     {

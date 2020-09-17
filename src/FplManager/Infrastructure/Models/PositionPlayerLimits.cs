@@ -1,7 +1,7 @@
 ﻿using FplClient.Data;
 using System.Collections.Generic;
 
-namespace FPLTeamManager.Infrastructure.Models
+namespace FplManager.Infrastructure.Models
 {
     public class PositionPlayerLimits
     {

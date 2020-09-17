@@ -1,6 +1,6 @@
 ﻿using FplClient.Data;
 
-namespace FPLTeamManager.Application.Services
+namespace FplManager.Application.Services
 {
     public class PlayerEvaluationService
     {

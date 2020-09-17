@@ -1,13 +1,13 @@
 ﻿using FplClient.Clients;
 using FplClient.Data;
-using FPLTeamManager.Application.Builders;
-using FPLTeamManager.Infrastructure.Extensions;
+using FplManager.Application.Builders;
+using FplManager.Infrastructure.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace FPLTeamManager.Application
+namespace FplManager.Application
 {
     class Program
     {

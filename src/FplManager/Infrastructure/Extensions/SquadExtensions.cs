@@ -1,9 +1,9 @@
 ﻿using FplClient.Data;
-using FPLTeamManager.Infrastructure.Models;
+using FplManager.Infrastructure.Models;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FPLTeamManager.Infrastructure.Extensions
+namespace FplManager.Infrastructure.Extensions
 {
     public static class SquadExtensions
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace FPLTeamManager.Infrastructure.Extensions
+namespace FplManager.Infrastructure.Extensions
 {
     public static class FplPlayerExtensions
     {

@@ -1,4 +1,4 @@
-﻿namespace FPLTeamManager.Infrastructure.Constants
+﻿namespace FplManager.Infrastructure.Constants
 {
     public static class GameRuleConstants
     {

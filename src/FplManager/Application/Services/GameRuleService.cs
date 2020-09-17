@@ -1,11 +1,11 @@
 ﻿using FplClient.Data;
-using FPLTeamManager.Infrastructure.Constants;
-using FPLTeamManager.Infrastructure.Extensions;
-using FPLTeamManager.Infrastructure.Models;
+using FplManager.Infrastructure.Constants;
+using FplManager.Infrastructure.Extensions;
+using FplManager.Infrastructure.Models;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FPLTeamManager.Application.Services
+namespace FplManager.Application.Services
 {
     public class GameRuleService
     {
