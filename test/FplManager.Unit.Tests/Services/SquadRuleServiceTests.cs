@@ -1,20 +1,20 @@
 ﻿using FplClient.Data;
-using FPLTeamManager.Application.Services;
-using FPLTeamManager.Infrastructure.Constants;
-using FPLTeamManager.Infrastructure.Models;
+using FplManager.Application.Services;
+using FplManager.Infrastructure.Constants;
+using FplManager.Infrastructure.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
 
-namespace FPLTeamManager.UnitTests.Application.Services
+namespace FPLManager.Unit.Tests.Application.Services
 {
-    public class GameRuleServiceTests
+    public class SquadRuleServiceTests
     {
-        private GameRuleService _sut;
+        private SquadRuleService _sut;
 
         [SetUp]
         public void Setup()
         {
-            _sut = new GameRuleService();
+            _sut = new SquadRuleService();
         }
         
         [Test]
@@ -38,14 +38,14 @@ namespace FPLTeamManager.UnitTests.Application.Services
             };
 
             // Act
-            var result = _sut.IsSquadValid(squad);
+            var result = _sut.IsValidSquad(squad);
             
             // Assert
             Assert.False(result);
         }
 
-        [TestCase(GameRuleConstants.MaxTotalCost + 1)]
-        [TestCase(GameRuleConstants.MinTotalCost - 1)]
+        [TestCase(SquadRuleConstants.MaxTotalCost + 1)]
+        [TestCase(SquadRuleConstants.MinTotalCost - 1)]
         public void IsSquadValid_ShouldReturnFalse_WhereTotalCostOfPlayersIsNotWithinRange(int totalSquadCost)
         {
             // Arrange
@@ -63,7 +63,7 @@ namespace FPLTeamManager.UnitTests.Application.Services
             };
 
             // Act
-            var result = _sut.IsSquadValid(squad);
+            var result = _sut.IsValidSquad(squad);
 
             // Assert
             Assert.False(result);
@@ -89,7 +89,7 @@ namespace FPLTeamManager.UnitTests.Application.Services
             };
 
             // Act
-            var result = _sut.IsSquadValid(squad);
+            var result = _sut.IsValidSquad(squad);
             
             // Assert
             Assert.True(result);

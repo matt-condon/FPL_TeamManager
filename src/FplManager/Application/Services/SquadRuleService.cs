@@ -17,14 +17,14 @@ namespace FplManager.Application.Services
         private bool MeetsCostCriteria(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
         {
             var squadCost = squad.GetSquadCost();
-            return squadCost >= GameRuleConstants.MinTotalCost 
-                && squadCost <= GameRuleConstants.MaxTotalCost;
+            return squadCost >= SquadRuleConstants.MinTotalCost 
+                && squadCost <= SquadRuleConstants.MaxTotalCost;
         }
 
         private bool MeetsTeamsCriteria(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
         {
             var groupedPlayers = squad.Values.SelectMany(list => list).GroupBy(p => p.PlayerInfo.TeamId);
-            return !groupedPlayers.Any(g => g.Count() > GameRuleConstants.MaxPlayersPerTeam);
+            return !groupedPlayers.Any(g => g.Count() > SquadRuleConstants.MaxPlayersPerTeam);
         }
     }
 }
