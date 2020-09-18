@@ -10,7 +10,12 @@ namespace FplManager.Application.Builders
 {
     public class SquadBuilder
     {
-        private GameRuleService _gameRuleService = new GameRuleService();
+        private readonly SquadRuleService _squadRuleService;
+
+        public SquadBuilder()
+        {
+            _squadRuleService = new SquadRuleService();
+        }
 
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByCost(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> players)
         {
@@ -36,7 +41,7 @@ namespace FplManager.Application.Builders
         private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> AttemptToBuildSquad(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> playerWishlist, out bool buildSuccesful, int retries, out int retriesRemaining)
         {
             var squad = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
-            var playerLimits = new PositionPlayerLimits();
+            var playerLimits = new SquadPositionPlayerLimits();
             var rnd = new Random();
             foreach (var position in playerWishlist) 
             {
@@ -45,7 +50,7 @@ namespace FplManager.Application.Builders
                 squad.Add(position.Key, playersForPosition);
             }
 
-            buildSuccesful = _gameRuleService.IsSquadValid(squad);
+            buildSuccesful = _squadRuleService.IsValidSquad(squad);
             retriesRemaining = retries - 1;
             
             return squad;

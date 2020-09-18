@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace FplManager.Application.Services
 {
-    public class GameRuleService
+    public class SquadRuleService
     {
-        public bool IsSquadValid(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        public bool IsValidSquad(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
         {
             return MeetsTeamsCriteria(squad) && MeetsCostCriteria(squad);
         }

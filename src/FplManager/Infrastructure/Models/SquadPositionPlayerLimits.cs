@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FplManager.Infrastructure.Models
 {
-    public class PositionPlayerLimits
+    public class SquadPositionPlayerLimits
     {
-        public PositionPlayerLimits()
+        public SquadPositionPlayerLimits()
         {
             Limits = new Dictionary<FplPlayerPosition, int>
             {
