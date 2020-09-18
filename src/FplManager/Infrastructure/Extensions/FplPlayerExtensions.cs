@@ -40,7 +40,7 @@ namespace FplManager.Infrastructure.Extensions
 
         private static PropertyInfo[] GetKeyProperties(this FplPlayer player)
         {
-            var keyProperties = new List<string>() { "FirstName", "SecondName", "TotalPoints", "NowCost", "ValueSeason"};
+            var keyProperties = new List<string>() { "FirstName", "SecondName", "TotalPoints", "NowCost", "ValueSeason", "EpNext"};
             return player.GetType().GetProperties().Where(p => keyProperties.Contains(p.Name.ToString())).ToArray();
         }
     }
