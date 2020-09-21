@@ -16,11 +16,11 @@ namespace FplManager.Application
             var httpClient = new HttpClient();
 
             /* My Team */
-            var fplTeamId = 357852;
+            //var fplTeamId = 357852;
             /* Bot Team */
             //var fplTeamId = 6184667;
             /* Test Bot Team */
-            //var fplTeamId = 6183774;
+            var fplTeamId = 6183774;
 
             var players = await GetPlayersAsync(httpClient);
             var pickSelection = await GetPicksAsync(httpClient, fplTeamId);
@@ -28,6 +28,7 @@ namespace FplManager.Application
             //PrintExistingTeamsAsync(players, pickSelection);
             // PrintNewSquad(players);
             PrintTeamTransferWishlist(players, pickSelection);
+            PrintSquadTransferList(players, pickSelection);
         }
 
         private static void PrintExistingTeamsAsync(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
@@ -54,13 +55,28 @@ namespace FplManager.Application
         
         private static void PrintTeamTransferWishlist(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
         {
+            Console.WriteLine("Transfer Wishlist:");
+            Console.WriteLine("------------------------------------------");
+
             var teamBuilder = new TeamBuilder();
             var currentTeam = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, startingTeamOnly: false);
             var wishlistBuilder = new TransferWishlistBuilder();
             var dictionaryBuilder = new PlayerDictionaryBuilder();
             var playerDictionary = dictionaryBuilder.BuildFilteredPlayerDictionary(players);
 
-            var wishlist = wishlistBuilder.BuildTransferWishlist(playerDictionary, currentTeam);
+            var wishlist = wishlistBuilder.BuildTransferTargetWishlist(playerDictionary, currentTeam);
+            Console.WriteLine(wishlist.GetWishlistString());
+        }
+
+        private static void PrintSquadTransferList(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
+        {
+            Console.WriteLine("Squad Transfer List:");
+            Console.WriteLine("------------------------------------------");
+
+            var teamBuilder = new TeamBuilder();
+            var currentTeam = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, startingTeamOnly: false);
+            var wishlistBuilder = new TransferWishlistBuilder();
+            var wishlist = wishlistBuilder.BuildSquadTransferList(currentTeam);
             Console.WriteLine(wishlist.GetWishlistString());
         }
 
