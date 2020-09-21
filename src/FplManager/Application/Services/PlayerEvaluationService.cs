@@ -5,7 +5,7 @@ namespace FplManager.Application.Services
     public class PlayerEvaluationService
     {
         //simple approach for initial team building :: evaluation based on transfers in/out and ownership (collective intelligence)
-        public double EvaluatePlayer(FplPlayer player)
+        public double EvaluatePlayerByTransfersAndOwnership(FplPlayer player)
         {
             var transferDifferential = (player.TransfersInEvent > player.TransfersOutEvent) ? (1 - (1 / EvaluateTransferDifferential(player))) : (EvaluateTransferDifferential(player) - 1);
             var ownershipMultiplier = 1 - 1 / player.OwnershipPercentage;

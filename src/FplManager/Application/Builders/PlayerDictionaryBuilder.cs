@@ -8,19 +8,19 @@ namespace FplManager.Application.Builders
 {
     public class PlayerDictionaryBuilder
     {
-        public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFilteredPlayerDictionary(IEnumerable<FplPlayer> players)
+        public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFilteredPlayerDictionary(IEnumerable<FplPlayer> players, bool filterAvailability = true)
         {
-            var availablePlayers = EvaluateAvailablePlayers(players);
+            var availablePlayers = EvaluatePlayers(players, filterAvailability);
             var filteredPlayers = availablePlayers.GroupBy(p => p.PlayerInfo.Position).ToDictionary(p => p.Key, p => p.ToList());
             return filteredPlayers;
         }
 
-        private IEnumerable<EvaluatedFplPlayer> EvaluateAvailablePlayers(IEnumerable<FplPlayer> players)
+        private IEnumerable<EvaluatedFplPlayer> EvaluatePlayers(IEnumerable<FplPlayer> players, bool filterAvailability)
         {
             var availableStatus = "a";
             var playerEvaluationService = new PlayerEvaluationService();
-            var filtered = players.Where(p => p.Status == availableStatus)
-                .Select(p => new EvaluatedFplPlayer(p, playerEvaluationService.EvaluatePlayer(p)));
+            var filtered = players.Where(p => !filterAvailability || p.Status == availableStatus)
+                .Select(p => new EvaluatedFplPlayer(p, playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p)));
             return filtered;
         }
     }
