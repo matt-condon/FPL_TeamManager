@@ -8,7 +8,7 @@ namespace FplManager.Application.Builders
     public class TransferWishlistBuilder
     {
         //TODO: Build wishlist based on form, transfers in/out and fixtures
-        public List<EvaluatedFplPlayer> BuildTransferWishlist(
+        public List<EvaluatedFplPlayer> BuildTransferTargetWishlist(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> allPlayers, 
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad, 
             int numberOfPlayers = 20)
@@ -26,6 +26,16 @@ namespace FplManager.Application.Builders
                 .Where(u => !existingSquadIds
                     .Any(s => s.PlayerInfo.Id == u.PlayerInfo.Id)
                 ).ToList();
+        }
+        
+        public List<EvaluatedFplPlayer> BuildSquadTransferList(
+            Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad)
+        {
+            return existingSquad.Values
+                .SelectMany(p => p)
+                .Where(p => p.Evaluation < 0.2)
+                .OrderBy(p => p.Evaluation)
+                .ToList();
         }
     }
 }
