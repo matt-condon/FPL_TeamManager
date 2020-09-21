@@ -19,7 +19,7 @@ namespace FplManager.Application
 
             await PrintExistingTeamsAsync(httpClient, players);
 
-            PrintNewSquad(players);
+            // PrintNewSquad(players);
         }
 
         private static async Task PrintExistingTeamsAsync(HttpClient http, IEnumerable<FplPlayer> players)
@@ -35,7 +35,7 @@ namespace FplManager.Application
             {
                 var pickSelection = await GetPicksAsync(http, team.Value);
 
-                var firstEleven = teamBuilder.BuildTeamByEntryPicks(pickSelection, players);
+                var firstEleven = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, false);
 
                 Console.WriteLine(firstEleven.GetSquadString());
             }
@@ -65,7 +65,7 @@ namespace FplManager.Application
         private static async Task<FplEntryPicks> GetPicksAsync(HttpClient http, int teamId)
         {
             var client = new FplEntryClient(http);
-            return await client.GetPicks(teamId, 1);
+            return await client.GetPicks(teamId, 2);
         }
     }
 }

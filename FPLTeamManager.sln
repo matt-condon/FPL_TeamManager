@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FplManager", "src\FplManage
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B8B7F4DF-187A-4506-89FF-C7DB161E3B55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FplManager.UnitTests", "..\FplManager.UnitTests\FplManager.UnitTests.csproj", "{F8CE60ED-9EA4-4014-BA7E-E3A584A76DD6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FplManager.Unit.Tests", "test\FplManager.Unit.Tests\FplManager.Unit.Tests.csproj", "{63A02723-20EF-4264-894B-65B684477874}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{EC1A6DB1-54BE-44A8-A954-0E76A3A31624}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC1A6DB1-54BE-44A8-A954-0E76A3A31624}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC1A6DB1-54BE-44A8-A954-0E76A3A31624}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8CE60ED-9EA4-4014-BA7E-E3A584A76DD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8CE60ED-9EA4-4014-BA7E-E3A584A76DD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8CE60ED-9EA4-4014-BA7E-E3A584A76DD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8CE60ED-9EA4-4014-BA7E-E3A584A76DD6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63A02723-20EF-4264-894B-65B684477874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{63A02723-20EF-4264-894B-65B684477874}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63A02723-20EF-4264-894B-65B684477874}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,7 +33,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EC1A6DB1-54BE-44A8-A954-0E76A3A31624} = {A8E7C6A5-9D30-40C2-8515-2D1044688573}
-		{F8CE60ED-9EA4-4014-BA7E-E3A584A76DD6} = {B8B7F4DF-187A-4506-89FF-C7DB161E3B55}
 		{63A02723-20EF-4264-894B-65B684477874} = {B8B7F4DF-187A-4506-89FF-C7DB161E3B55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

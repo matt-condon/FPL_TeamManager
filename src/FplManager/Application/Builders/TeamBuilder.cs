@@ -29,7 +29,7 @@ namespace FplManager.Application.Builders
             var dictionaryBuilder = new PlayerDictionaryBuilder();
 
             var picksAsPlayers = allPlayers.Where(p => entryPicks.Picks.Any(s => s.PlayerId == p.Id));
-            return dictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers);
+            return dictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false);
         }
 
         private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildStartingTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
