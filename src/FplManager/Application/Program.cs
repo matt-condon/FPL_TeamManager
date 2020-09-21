@@ -15,30 +15,27 @@ namespace FplManager.Application
         {
             var httpClient = new HttpClient();
 
+            /* My Team */
+            var fplTeamId = 357852;
+            /* Bot Team */
+            //var fplTeamId = 6184667;
+            /* Test Bot Team */
+            //var fplTeamId = 6183774;
+
             var players = await GetPlayersAsync(httpClient);
+            var pickSelection = await GetPicksAsync(httpClient, fplTeamId);
 
-            await PrintExistingTeamsAsync(httpClient, players);
-
+            //PrintExistingTeamsAsync(players, pickSelection);
             // PrintNewSquad(players);
+            PrintTeamTransferWishlist(players, pickSelection);
         }
 
-        private static async Task PrintExistingTeamsAsync(HttpClient http, IEnumerable<FplPlayer> players)
+        private static void PrintExistingTeamsAsync(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
         {
-            var fplTeams = new Dictionary<string, int>()
-            {
-                //{ "testBot", 6184667 },
-                //{ "prodBot", 6183774 },
-                { "myTeam", 357852 }
-            };
+            
             var teamBuilder = new TeamBuilder();
-            foreach (var team in fplTeams)
-            {
-                var pickSelection = await GetPicksAsync(http, team.Value);
-
-                var firstEleven = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, false);
-
-                Console.WriteLine(firstEleven.GetSquadString());
-            }
+            var firstEleven = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, false);
+            Console.WriteLine(firstEleven.GetSquadString());
         }
 
         private static void PrintNewSquad(IEnumerable<FplPlayer> players)
@@ -53,6 +50,18 @@ namespace FplManager.Application
 
             Console.WriteLine(squad.GetSquadString());
             Console.WriteLine($"Squad Cost: {squad.GetSquadCost()}");
+        }
+        
+        private static void PrintTeamTransferWishlist(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
+        {
+            var teamBuilder = new TeamBuilder();
+            var currentTeam = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, startingTeamOnly: false);
+            var wishlistBuilder = new TransferWishlistBuilder();
+            var dictionaryBuilder = new PlayerDictionaryBuilder();
+            var playerDictionary = dictionaryBuilder.BuildFilteredPlayerDictionary(players);
+
+            var wishlist = wishlistBuilder.BuildTransferWishlist(playerDictionary, currentTeam);
+            Console.WriteLine(wishlist.GetWishlistString());
         }
 
         private static async Task<IEnumerable<FplPlayer>> GetPlayersAsync(HttpClient http)
