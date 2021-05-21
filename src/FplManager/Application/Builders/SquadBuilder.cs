@@ -17,14 +17,14 @@ namespace FplManager.Application.Builders
             _squadRuleService = new SquadRuleService();
         }
 
-        public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByCost(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> players)
+        public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByCost(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> players, bool isFreeHit = false)
         {
             var squad = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
             var squadBuildSuccessful = false;
-            var retries = 10;
+            var retries = 100;
             while (!squadBuildSuccessful && retries > 0)
             {
-                squad = AttemptToBuildSquad(players, out squadBuildSuccessful, retries, out retries);
+                squad = AttemptToBuildSquad(players, out squadBuildSuccessful, retries, out retries, isFreeHit);
                 Console.WriteLine($"SquadValue = {squad.GetSquadCost()}");
             }
 
@@ -38,7 +38,14 @@ namespace FplManager.Application.Builders
         }
 
         //Initial implementation uses weighted randomness to attempt to build squad within cost range
-        private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> AttemptToBuildSquad(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> playerWishlist, out bool buildSuccesful, int retries, out int retriesRemaining)
+        private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> AttemptToBuildSquad(
+                Dictionary<FplPlayerPosition, 
+                List<EvaluatedFplPlayer>> playerWishlist, 
+                out bool buildSuccesful, 
+                int retries, 
+                out int retriesRemaining, 
+                bool isFreeHit
+            )
         {
             var squad = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
             var playerLimits = new SquadPositionPlayerLimits();
@@ -46,7 +53,7 @@ namespace FplManager.Application.Builders
             foreach (var position in playerWishlist) 
             {
                 var positionPlayerLimit = playerLimits.Limits[position.Key];
-                var playersForPosition = position.Value.OrderByDescending(x => GetWeightedRandomEval(x.Evaluation, rnd)).Take(positionPlayerLimit).ToList();
+                var playersForPosition = position.Value.OrderByDescending(x => GetWeightedRandomEval(EvaluatePlayer(x, isFreeHit), rnd)).Take(positionPlayerLimit).ToList();
                 squad.Add(position.Key, playersForPosition);
             }
 
@@ -55,7 +62,16 @@ namespace FplManager.Application.Builders
             
             return squad;
 
-            static double GetWeightedRandomEval(double weightedEval, Random rnd){
+            static double EvaluatePlayer(EvaluatedFplPlayer player, bool isFreeHit){
+
+                if (!isFreeHit)
+                    return player.Evaluation;
+                var playerEvaluationService = new PlayerEvaluationService();
+                return playerEvaluationService.EvaluateFreeHitPlayer(player);
+            };
+
+            static double GetWeightedRandomEval(double weightedEval, Random rnd)
+            {
                 var randomWeight = ((double)rnd.Next(-20, 20) / 100);
                 return weightedEval + randomWeight;
             };

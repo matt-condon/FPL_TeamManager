@@ -1,4 +1,5 @@
 ﻿using FplClient.Data;
+using FplManager.Application.Services;
 using FplManager.Infrastructure.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +8,15 @@ namespace FplManager.Application.Builders
 {
     public class TransferWishlistBuilder
     {
-        //TODO: Build wishlist based on form, transfers in/out and fixtures
         public List<EvaluatedFplPlayer> BuildTransferTargetWishlist(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> allPlayers, 
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad, 
-            int numberOfPlayers = 20)
+            int numberOfPlayers = 200)
         {
 
             var unfilteredWishlist = allPlayers.Values
                 .SelectMany(p => p)
-                .OrderByDescending(p => p.Evaluation)
-                .Take(numberOfPlayers);
+                .OrderByDescending(p => p.Evaluation);
 
             var existingSquadIds = existingSquad.Values
                 .SelectMany(s => s);
@@ -25,17 +24,25 @@ namespace FplManager.Application.Builders
             return unfilteredWishlist
                 .Where(u => !existingSquadIds
                     .Any(s => s.PlayerInfo.Id == u.PlayerInfo.Id)
-                ).ToList();
+                )
+                .Take(numberOfPlayers)
+                .ToList();
         }
         
         public List<EvaluatedFplPlayer> BuildSquadTransferList(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad)
         {
-            return existingSquad.Values
+            var orderedList = existingSquad.Values
                 .SelectMany(p => p)
-                .Where(p => p.Evaluation < 0.2)
-                .OrderBy(p => p.Evaluation)
+                .OrderBy(p => EvaluateTransferListViability(p))
                 .ToList();
+            return orderedList;
+        }
+
+        private double EvaluateTransferListViability(EvaluatedFplPlayer player)
+        {
+            var playerEvaluationService = new PlayerEvaluationService();
+            return playerEvaluationService.EvaluateCurrentTeamPlayer(player);
         }
     }
 }
