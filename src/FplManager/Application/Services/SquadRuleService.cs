@@ -9,16 +9,16 @@ namespace FplManager.Application.Services
 {
     public class SquadRuleService
     {
-        public bool IsValidSquad(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        public bool IsValidSquad(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad, int availableFunds = SquadRuleConstants.MaxTotalCost)
         {
-            return MeetsTeamsCriteria(squad) && MeetsCostCriteria(squad);
+            return MeetsTeamsCriteria(squad) && MeetsCostCriteria(squad, availableFunds);
         }
 
-        private bool MeetsCostCriteria(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        private bool MeetsCostCriteria(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad, int availableFunds)
         {
             var squadCost = squad.GetSquadCost();
-            return squadCost >= SquadRuleConstants.MinTotalCost 
-                && squadCost <= SquadRuleConstants.MaxTotalCost;
+            return squadCost >= SquadRuleConstants.MinTotalCost
+                && squadCost <= availableFunds;
         }
 
         private bool MeetsTeamsCriteria(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
