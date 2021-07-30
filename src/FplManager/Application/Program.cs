@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,43 +18,51 @@ namespace FplManager.Application
 {
     class Program
     {
+        static TeamBuilder _teamBuilder;
+
         static async Task Main(string[] args)
         {
+            _teamBuilder = new TeamBuilder();
+
+
             CookieContainer cookieContainer = new CookieContainer();
             HttpClientHandler handler = new HttpClientHandler();
             handler.CookieContainer = cookieContainer;
             var httpClient = new HttpClient(handler);
 
-            /* My Team */
-            //var fplTeamId = 357852;
-            //fijife
-            //var fplTeamId = 6184667;
-            //bobbsbobbs@gmail.com
+            //var account = "FIJIFE@GMAIL.COM";
+            //var fplTeamId = 1445605;
+
+            //var account = "bobbsbobbs@gmail.com";
             //var fplTeamId = 1223804;
 
-            var account = "matt.condon@ucdconnect.ie";
-            var fplTeamId = 1224412;
+            //var account = "matt.condon@ucdconnect.ie";
+            //var fplTeamId = 1224412;
 
-            //var account = "mattoconduin@gmail.com";
-            //var fplTeamId = 1828488;
+            var account = "mattoconduin@gmail.com";
+            var fplTeamId = 1828488;
 
             await AuthenticateAsync(httpClient, account, "PASSWORD_HERE");
             var currentTeam = await GetTeamAsync(httpClient, fplTeamId);
+            var allPlayers = await GetPlayersAsync(httpClient);
+            var fullTeam = _teamBuilder.BuildTeamByMyTeamModel(currentTeam.Picks, allPlayers, startingTeamOnly: false);
+
+            await SelectCurrentTeam(fullTeam, httpClient, fplTeamId);
+            PrintCurrentTeam(fullTeam);
+
+            var transferList = GetSquadTransferList(fullTeam);
+            PrintSquadTransferList(transferList);
 
             //var gameweek = await GetCurrentGameweek(httpClient);
-            var players = await GetPlayersAsync(httpClient);
             //var pickSelection = await GetPicksAsync(httpClient, fplTeamId, gameweek);
             //var fplEntry = await GetFplEntryAsync(httpClient, fplTeamId);
 
             //PrintNewSquad(players);
 
-            await SelectCurrentTeam(players, currentTeam, httpClient, fplTeamId);
-
-            PrintCurrentTeam(players, currentTeam);
 
             //PrintExistingTeam(players, pickSelection);
             //PrintTeamTransferWishlist(players, pickSelection);
-            //PrintSquadTransferList(players, pickSelection);
+            //PrintSquadTransferList(allPlayers, pickSelection);
             //PrintTransferSelection(players, pickSelection, fplEntry);
         }
 
@@ -107,24 +114,20 @@ namespace FplManager.Application
 
         private static void PrintExistingTeam(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
         {
-            var teamBuilder = new TeamBuilder();
-            var firstEleven = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, true);
+            var firstEleven = _teamBuilder.BuildTeamByEntryPicks(pickSelection, players, true);
             Console.WriteLine(firstEleven.GetSquadString());
         }
 
-        private static void PrintCurrentTeam(IEnumerable<FplPlayer> allPlayers, MyTeamModel myTeam)
+        private static void PrintCurrentTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullTeam)
         {
-            var teamBuilder = new TeamBuilder();
-            var fullTeam = teamBuilder.BuildTeamByMyTeamModel(myTeam.Picks, allPlayers, startingTeamOnly: false);
             Console.WriteLine(fullTeam.GetSquadString());
         }
         
-        private static async Task SelectCurrentTeam(IEnumerable<FplPlayer> allPlayers, MyTeamModel myTeam, HttpClient httpClient, int fplTeamId)
+        private static async Task SelectCurrentTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullTeam, HttpClient httpClient, int fplTeamId)
         {
-            var teamBuilder = new TeamBuilder();
-            var fullTeam = teamBuilder.BuildSetTeamByMyTeamModel(myTeam.Picks, allPlayers);
+            var setTeam = _teamBuilder.BuildTeamToBeSet(fullTeam);
 
-            string json = JsonConvert.SerializeObject(fullTeam);
+            string json = JsonConvert.SerializeObject(setTeam);
             StringContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
             var getTeamResponse = await httpClient.PostAsync(
@@ -132,7 +135,7 @@ namespace FplManager.Application
                 httpContent
             );
 
-            if (getTeamResponse.StatusCode != System.Net.HttpStatusCode.OK)
+            if (getTeamResponse.StatusCode != HttpStatusCode.OK)
             {
                 Console.WriteLine($"Select Current Team Failed. StatusCode: {getTeamResponse.StatusCode}");
             }
@@ -167,6 +170,12 @@ namespace FplManager.Application
             Console.WriteLine(wishlist.GetWishlistString());
         }
 
+        private static List<EvaluatedFplPlayer> GetSquadTransferList(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullTeam)
+        {
+            var wishlistBuilder = new TransferWishlistBuilder();
+            return wishlistBuilder.BuildSquadTransferList(fullTeam);
+        }
+
         private static void PrintSquadTransferList(IEnumerable<FplPlayer> players, FplEntryPicks pickSelection)
         {
             Console.WriteLine("Squad Transfer List:");
@@ -176,6 +185,14 @@ namespace FplManager.Application
             var currentTeam = teamBuilder.BuildTeamByEntryPicks(pickSelection, players, startingTeamOnly: false);
             var wishlistBuilder = new TransferWishlistBuilder();
             var wishlist = wishlistBuilder.BuildSquadTransferList(currentTeam);
+            Console.WriteLine(wishlist.GetWishlistString());
+        }
+
+        private static void PrintSquadTransferList(List<EvaluatedFplPlayer> wishlist)
+        {
+            Console.WriteLine("Squad Transfer List:");
+            Console.WriteLine("------------------------------------------");
+
             Console.WriteLine(wishlist.GetWishlistString());
         }
 

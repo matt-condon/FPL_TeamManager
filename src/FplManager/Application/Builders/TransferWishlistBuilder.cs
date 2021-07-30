@@ -8,6 +8,13 @@ namespace FplManager.Application.Builders
 {
     public class TransferWishlistBuilder
     {
+        PlayerEvaluationService _playerEvaluationService;
+
+        public TransferWishlistBuilder()
+        {
+            _playerEvaluationService = new PlayerEvaluationService();
+        }
+
         public List<EvaluatedFplPlayer> BuildTransferTargetWishlist(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> allPlayers, 
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad, 
@@ -41,8 +48,7 @@ namespace FplManager.Application.Builders
 
         private double EvaluateTransferListViability(EvaluatedFplPlayer player)
         {
-            var playerEvaluationService = new PlayerEvaluationService();
-            return playerEvaluationService.EvaluateCurrentTeamPlayer(player);
+            return _playerEvaluationService.EvaluateCurrentTeamPlayer(player);
         }
     }
 }
