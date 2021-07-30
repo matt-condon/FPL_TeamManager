@@ -32,71 +32,18 @@ namespace FplManager.Application.Builders
             return BuildStartingTeam(fullSquad);
         }
         
-        public SetTeamModel BuildSetTeamByMyTeamModel(ICollection<CurrentTeamPick> teamPicks, IEnumerable<FplPlayer> allPlayers)
-        {
-            var convertedPicks = teamPicks.ToList<FplPick>();
-            var fullSquad = BuildFullSquadModel(convertedPicks, allPlayers);
-            
-            return BuildTeamToBeSet(fullSquad);
-        }
-
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByPlayerList(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullSquad)
         {
             return BuildStartingTeam(fullSquad);
         }
 
-        private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFullSquadModel(ICollection<FplPick> entryPicks, IEnumerable<FplPlayer> allPlayers)
-        {
-            var dictionaryBuilder = new PlayerDictionaryBuilder();
-
-            var picksAsPlayers = allPlayers.Where(p => entryPicks.Any(s => s.PlayerId == p.Id)).ToList();
-            return dictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false, assignCurrentTeamEvaluation: true);
-        }
-
-        private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildStartingTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
-        {
-            var teamPositionLimits = new TeamPositionPlayerLimits();
-            var startingTeam = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
-            
-            foreach (var position in squad)
-            {
-                var playersInPosition = position.Value
-                    .OrderByDescending(p => p.CurrentTeamEvaluation).ToList()
-                    .Take(teamPositionLimits.Limits[position.Key].Minimum).ToList();
-
-                startingTeam.Add(position.Key, playersInPosition);
-            }
-
-            var benchPlayers = squad.Select(s => s.Value)
-                    .SelectMany(s => s)
-                    .OrderByDescending(s => s.CurrentTeamEvaluation)
-                    .Where(s => !startingTeam.Values.Any(p => p.Any(r => r.PlayerInfo.Id == s.PlayerInfo.Id)));
-
-            foreach(var benchPlayer in benchPlayers)
-            {
-                if (!TeamHasMaxInPosition(benchPlayer.PlayerInfo.Position))
-                {
-                    startingTeam[benchPlayer.PlayerInfo.Position].Add(benchPlayer);
-                }
-                if (startingTeam.Values.Sum(c => c.Count()) == 11)
-                {
-                    break;
-                }
-            }
-            
-            return startingTeam;
-
-            bool TeamHasMaxInPosition(FplPlayerPosition position) 
-                => teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count());
-        }
-
-        private SetTeamModel BuildTeamToBeSet(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        public SetTeamModel BuildTeamToBeSet(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squadAsDictionary)
         {
             var teamPositionLimits = new TeamPositionPlayerLimits();
             var startingTeam = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
             var setTeam = new SetTeamModel();
 
-            var allPlayers = squad.Select(s => s.Value)
+            var allPlayers = squadAsDictionary.Select(s => s.Value)
                 .SelectMany(s => s)
                 .OrderByDescending(s => s.CurrentTeamEvaluation)
                 .ToArray();
@@ -105,7 +52,7 @@ namespace FplManager.Application.Builders
             var viceCaptainId = allPlayers[1].PlayerInfo.Id;
 
 
-            foreach (var position in squad)
+            foreach (var position in squadAsDictionary)
             {
                 var playersInPosition = position.Value
                     .OrderByDescending(p => p.CurrentTeamEvaluation).ToList()
@@ -114,7 +61,7 @@ namespace FplManager.Application.Builders
                 startingTeam.Add(position.Key, playersInPosition);
             }
 
-            var remainingPlayers = squad.Select(s => s.Value)
+            var remainingPlayers = squadAsDictionary.Select(s => s.Value)
                     .SelectMany(s => s)
                     .OrderByDescending(s => s.CurrentTeamEvaluation)
                     .Where(s => !startingTeam.Values.Any(p => p.Any(r => r.PlayerInfo.Id == s.PlayerInfo.Id)))
@@ -139,8 +86,13 @@ namespace FplManager.Application.Builders
                 .ToList();
             sortedTeam.ForEach(s => setTeam.AddPick(s, s.PlayerInfo.Id == captainId, s.PlayerInfo.Id == viceCaptainId));
 
+            var subKeeper = benchPlayers.Where(p => p.PlayerInfo.Position.Equals(FplPlayerPosition.Goalkeeper)).FirstOrDefault();
+            setTeam.AddPick(subKeeper);
+
+            benchPlayers.Remove(subKeeper);
+
             benchPlayers.Select(p => p)
-                .OrderBy(s => GetPositionInt(s.PlayerInfo.Position))
+                .OrderByDescending(s => s.CurrentTeamEvaluation)
                 .ToList()
                 .ForEach(s => setTeam.AddPick(s));
 
@@ -151,6 +103,51 @@ namespace FplManager.Application.Builders
                 var res = (int)pos;
                 return res;
             }
+
+            bool TeamHasMaxInPosition(FplPlayerPosition position)
+                => teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count());
+        }
+
+        private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFullSquadModel(ICollection<FplPick> entryPicks, IEnumerable<FplPlayer> allPlayers)
+        {
+            var dictionaryBuilder = new PlayerDictionaryBuilder();
+
+            var picksAsPlayers = allPlayers.Where(p => entryPicks.Any(s => s.PlayerId == p.Id)).ToList();
+            return dictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false, assignCurrentTeamEvaluation: true);
+        }
+
+        private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildStartingTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        {
+            var teamPositionLimits = new TeamPositionPlayerLimits();
+            var startingTeam = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
+
+            foreach (var position in squad)
+            {
+                var playersInPosition = position.Value
+                    .OrderByDescending(p => p.CurrentTeamEvaluation).ToList()
+                    .Take(teamPositionLimits.Limits[position.Key].Minimum).ToList();
+
+                startingTeam.Add(position.Key, playersInPosition);
+            }
+
+            var benchPlayers = squad.Select(s => s.Value)
+                    .SelectMany(s => s)
+                    .OrderByDescending(s => s.CurrentTeamEvaluation)
+                    .Where(s => !startingTeam.Values.Any(p => p.Any(r => r.PlayerInfo.Id == s.PlayerInfo.Id)));
+
+            foreach (var benchPlayer in benchPlayers)
+            {
+                if (!TeamHasMaxInPosition(benchPlayer.PlayerInfo.Position))
+                {
+                    startingTeam[benchPlayer.PlayerInfo.Position].Add(benchPlayer);
+                }
+                if (startingTeam.Values.Sum(c => c.Count()) == 11)
+                {
+                    break;
+                }
+            }
+
+            return startingTeam;
 
             bool TeamHasMaxInPosition(FplPlayerPosition position)
                 => teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count());
