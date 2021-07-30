@@ -33,7 +33,8 @@ namespace FplManager.Infrastructure.Extensions
                 foreach (var player in position.Value)
                 {
                     squadString = squadString.ConcatWithNewLine($"{player.PlayerInfo.GetPartialPlayerString()}");
-                    squadString = squadString.ConcatWithNewLine($"Player Evaluation: {player.Evaluation}");
+                    squadString = squadString.ConcatWithNewLine($"Transfer Evaluation: {player.Evaluation}");
+                    squadString = squadString.ConcatWithNewLine($"Selection Evaluation: {player.CurrentTeamEvaluation}");
                     squadString = squadString.ConcatWithNewLine("");
                 }
             }
