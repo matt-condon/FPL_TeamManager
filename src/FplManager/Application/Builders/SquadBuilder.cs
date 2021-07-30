@@ -11,13 +11,15 @@ namespace FplManager.Application.Builders
     public class SquadBuilder
     {
         private readonly SquadRuleService _squadRuleService;
+        private readonly PlayerEvaluationService _evaluationService;
 
         public SquadBuilder()
         {
             _squadRuleService = new SquadRuleService();
+            _evaluationService = new PlayerEvaluationService();
         }
 
-        public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByCost(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> players, bool isFreeHit = false)
+        public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByCost(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> players, bool isFreeHit)
         {
             var squad = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
             var squadBuildSuccessful = false;
@@ -62,12 +64,11 @@ namespace FplManager.Application.Builders
             
             return squad;
 
-            static double EvaluatePlayer(EvaluatedFplPlayer player, bool isFreeHit){
+            double EvaluatePlayer(EvaluatedFplPlayer player, bool isFreeHit){
 
                 if (!isFreeHit)
                     return player.Evaluation;
-                var playerEvaluationService = new PlayerEvaluationService();
-                return playerEvaluationService.EvaluateFreeHitPlayer(player);
+                return _evaluationService.EvaluateFreeHitPlayer(player);
             };
 
             static double GetWeightedRandomEval(double weightedEval, Random rnd)

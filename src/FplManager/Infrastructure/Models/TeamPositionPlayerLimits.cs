@@ -23,7 +23,7 @@ namespace FplManager.Infrastructure.Models
                 },
                 {
                     FplPlayerPosition.Forward,
-                    new TeamPositionLimits(2, 3)
+                    new TeamPositionLimits(1, 3)
                 }
             };
         }
