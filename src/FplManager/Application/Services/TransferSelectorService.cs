@@ -1,5 +1,4 @@
 ﻿using FplClient.Data;
-using FplManager.Application.Builders;
 using FplManager.Infrastructure.Extensions;
 using FplManager.Infrastructure.Models;
 using System;
@@ -10,27 +9,23 @@ namespace FplManager.Application.Services
 {
     public class TransferSelectorService
     {
-        private readonly TransferWishlistBuilder _transferWishlistBuilder;
         private readonly SquadRuleService _squadRuleService;
         public TransferSelectorService()
         {
-            _transferWishlistBuilder = new TransferWishlistBuilder();
             _squadRuleService = new SquadRuleService();
         }
+
         public TransferModel SelectTransfer(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad,
-            Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> allPlayers,
-            int inBank,
-            int numberOfTransfers = 1 
+            List<EvaluatedFplPlayer> transferTargetsWishList,
+            List<EvaluatedFplPlayer> squadTransferList,
+            int inBank
         )
         {
-            var transferTargetsWishList = _transferWishlistBuilder.BuildTransferTargetWishlist(allPlayers, existingSquad);
-            var squadTransferList = _transferWishlistBuilder.BuildSquadTransferList(existingSquad);
-
             var possibleTransfers = transferTargetsWishList
                 .SelectMany(w => squadTransferList
                 .Where(s => IsValidTransfer(s, w, existingSquad, inBank))
-                .Select(s => new TransferModel(s, w, w.Evaluation - s.Evaluation)))
+                .Select(s => new TransferModel(s, w, w.Evaluation - s.Evaluation, s.SellingPrice, w.PlayerInfo.NowCost)))
                 .OrderByDescending(t => t.EvalDifference);
 
             var getrandom = new Random();
