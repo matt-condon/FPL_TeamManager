@@ -58,7 +58,7 @@ namespace FplManager.Application.Services
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad,
             int inBank)
         {
-            var estAvailableFunds = existingSquad.GetSquadCost() + inBank;
+            var currentSquadCost = existingSquad.GetSquadCost();
             var position = playerOut.PlayerInfo.Position;
             var squadPositionValues = existingSquad.Where(p => p.Key == position)
                 .SelectMany(p => p.Value)
@@ -68,7 +68,7 @@ namespace FplManager.Application.Services
             var newSquad = existingSquad.Where(p => p.Key != position)
                 .ToDictionary(p => p.Key, p => p.Value);
             newSquad.Add(position, squadPositionValues);
-            var transferIsValid = _squadRuleService.IsValidSquad(newSquad, estAvailableFunds);
+            var transferIsValid = _squadRuleService.IsValidSquad(newSquad, currentSquadCost, inBank);
             return transferIsValid;
         }
 

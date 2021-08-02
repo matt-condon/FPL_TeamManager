@@ -4,11 +4,14 @@ namespace FplManager.Infrastructure.Models
 {
     public class EvaluatedFplPlayer : CurrentFplPlayer
     {
+        private const int DefaultSellingPrice = 999;
+
         public EvaluatedFplPlayer(FplPlayer playerInfo, double evaluation, double currentTeamEval = DefaultEval)
         {
             PlayerInfo = playerInfo;
             Evaluation = evaluation;
             CurrentTeamEvaluation = currentTeamEval;
+            SellingPrice = DefaultSellingPrice;
         }
 
         public EvaluatedFplPlayer(CurrentFplPlayer currentFplPlayer, double evaluation, double currentTeamEval)

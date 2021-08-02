@@ -19,7 +19,9 @@ namespace FplManager.Infrastructure.Extensions
         {
             return squad.Values
                 .SelectMany(list => list)
-                .Sum(p => p.PlayerInfo.NowCost);
+                .Sum(p => GetCost(p));
+
+            int GetCost(EvaluatedFplPlayer player) => (player.SellingPrice != 999) ? player.SellingPrice : player.PlayerInfo.NowCost;
         }
 
         public static string GetSquadString(this Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
