@@ -13,12 +13,13 @@ namespace FplManager.Application.Services
             return (transferDifferential * 0.75) + (ownershipMultiplier * 0.75);
         }
 
-        public double EvaluateCurrentTeamPlayer(EvaluatedFplPlayer player)
+        public double EvaluateCurrentTeamPlayer(FplPlayer player)
         {
-            var formDifferential = 1.0 - (1.0 / (player.PlayerInfo.Form + 1.0));
-            var expectedPointsDifferential = 1.0 - (1.0 / (player.PlayerInfo?.EpNext + 1.0)) ?? 0.0;
-            var costDifferential = 1.0 - (140.0 / ((double?) player.PlayerInfo?.NowCost)) ?? 0.0;
-            return (player.Evaluation * 0.3) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.3) + (costDifferential * 0.1);
+            var regEval = EvaluatePlayerByTransfersAndOwnership(player);
+            var formDifferential = 1.0 - (1.0 / (player.Form + 1.0));
+            var expectedPointsDifferential = 1.0 - (1.0 / (player?.EpNext + 1.0)) ?? 0.0;
+            var costDifferential = 1.0 - (140.0 / (player?.NowCost)) ?? 0.0;
+            return (regEval * 0.3) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.3) + (costDifferential * 0.1);
         }
 
         public double EvaluateFreeHitPlayer(EvaluatedFplPlayer player)

@@ -8,7 +8,7 @@ namespace FplManager.Application.Builders
 {
     public class TransferWishlistBuilder
     {
-        PlayerEvaluationService _playerEvaluationService;
+        readonly PlayerEvaluationService _playerEvaluationService;
 
         public TransferWishlistBuilder()
         {
@@ -41,12 +41,12 @@ namespace FplManager.Application.Builders
         {
             var orderedList = existingSquad.Values
                 .SelectMany(p => p)
-                .OrderBy(p => EvaluateTransferListViability(p))
+                .OrderBy(p => EvaluateTransferListViability(p.PlayerInfo))
                 .ToList();
             return orderedList;
         }
 
-        private double EvaluateTransferListViability(EvaluatedFplPlayer player)
+        private double EvaluateTransferListViability(FplPlayer player)
         {
             return _playerEvaluationService.EvaluateCurrentTeamPlayer(player);
         }
