@@ -4,6 +4,7 @@
     {
         public int FplTeamId { get; set; }
         public AuthenticationModel AuthModel { get; set; }
+        public double TransferPercentile { get; set; }
     }
 
     public class AuthenticationModel

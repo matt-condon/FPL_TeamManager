@@ -13,6 +13,8 @@ namespace FplManager.Application
 {
     public class Program
     {
+        private const bool TestOnly = false;
+
         private static TeamOrchestratorService _teamOrchestratorService;
 
         static async Task Main(string[] args)
@@ -21,8 +23,10 @@ namespace FplManager.Application
                 .AddJsonFile("./Configuration/appSettings.json", true, true);
             var config = builder.Build();
             var appConfig = config.Get<AppConfig>();
-
             var accounts = appConfig.AccountModel;
+            
+            accounts = TestOnly ? accounts.Take(1) : accounts;
+
             var httpClient = new HttpClient();
 
             _teamOrchestratorService = new TeamOrchestratorService(httpClient);
@@ -33,7 +37,7 @@ namespace FplManager.Application
                 var authConfigAsDictionary = GetValues(authConfig);
                 await AuthenticateAsync(httpClient, appConfig.LogInUrl, authConfigAsDictionary);
 
-                await _teamOrchestratorService.ManageTeam(account.FplTeamId, numberOfTransfers: 0);
+                await _teamOrchestratorService.ManageTeam(account.FplTeamId, account.TransferPercentile ,numberOfTransfers: 16);
             }
         }
 
