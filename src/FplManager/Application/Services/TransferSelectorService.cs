@@ -10,16 +10,19 @@ namespace FplManager.Application.Services
     public class TransferSelectorService
     {
         private readonly SquadRuleService _squadRuleService;
+        private readonly Random _getRandom;
         public TransferSelectorService()
         {
             _squadRuleService = new SquadRuleService();
+            _getRandom = new Random();
         }
 
         public TransferModel SelectTransfer(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad,
             List<EvaluatedFplPlayer> transferTargetsWishList,
             List<EvaluatedFplPlayer> squadTransferList,
-            int inBank
+            int inBank,
+            double transferPercentile
         )
         {
             var possibleTransfers = transferTargetsWishList
@@ -28,11 +31,10 @@ namespace FplManager.Application.Services
                 .Select(s => new TransferModel(s, w, w.Evaluation - s.Evaluation, s.SellingPrice, w.PlayerInfo.NowCost)))
                 .OrderByDescending(t => t.EvalDifference);
 
-            var getrandom = new Random();
-            var transferSelection = getrandom.Next(0, 5);
-
             /* for debugging purposes */
             //GetNamedTransfers(possibleTransfers);
+            
+            var transferSelection = GetTransferSelection(possibleTransfers, transferPercentile);
 
             return possibleTransfers.ToArray()[transferSelection];
         }
@@ -70,6 +72,14 @@ namespace FplManager.Application.Services
             newSquad.Add(position, squadPositionValues);
             var transferIsValid = _squadRuleService.IsValidSquad(newSquad, currentSquadCost, inBank);
             return transferIsValid;
+        }
+
+        private int GetTransferSelection(IOrderedEnumerable<TransferModel> possibleTransfers, double transferPercentile)
+        {
+            var possibleTransferCount = possibleTransfers.Count();
+            var transfersToConsider = (int)(possibleTransferCount * transferPercentile);
+            var transferSelection = _getRandom.Next(0, transfersToConsider);
+            return transferSelection;
         }
 
         private dynamic GetNamedTransfers(IOrderedEnumerable<TransferModel> possibleTransfers){

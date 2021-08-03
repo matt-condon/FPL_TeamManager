@@ -35,7 +35,7 @@ namespace FplManager.Application.Services
             _fplPlayerClient = new FplPlayerClient(_httpClient);
         }
 
-        public async Task ManageTeam(int fplTeamId, int numberOfTransfers = 0, int sleepBetweenTransfersMs = 2000)
+        public async Task ManageTeam(int fplTeamId, double transferPercentile = 0.1, int numberOfTransfers = 0, int sleepBetweenTransfersMs = 2000)
         {
             var allPlayers = await GetPlayersAsync();
 
@@ -50,7 +50,7 @@ namespace FplManager.Application.Services
                 var transferTargetsList = GetTransferTargetList(fullTeam, allPlayers, 100);
                 //transferTargetsList.PrintTransferTargetList();
 
-                var transferSelection = _transferSelectorService.SelectTransfer(fullTeam, transferTargetsList, squadTransferList, currentTeam.Transfers.Bank);
+                var transferSelection = _transferSelectorService.SelectTransfer(fullTeam, transferTargetsList, squadTransferList, currentTeam.Transfers.Bank, transferPercentile);
                 PrintMyTransferSelection(transferSelection);
 
                 var gameweek = await GetComingGameweek();
