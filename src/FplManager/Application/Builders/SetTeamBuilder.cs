@@ -1,5 +1,6 @@
 ﻿using FplClient.Data;
 using FplManager.Infrastructure.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,20 +8,17 @@ namespace FplManager.Application.Builders
 {
     public class SetTeamBuilder
     {
+        private const char CaptainChar = 'C';
+        private const char ViceCaptainChar = 'V';
+
         public SetTeamModel BuildTeamToBeSet(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squadAsDictionary)
         {
             var teamPositionLimits = new TeamPositionPlayerLimits();
             var startingTeam = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
             var setTeam = new SetTeamModel();
 
-            var allPlayers = squadAsDictionary.Select(s => s.Value)
-                .SelectMany(s => s)
-                .OrderByDescending(s => s.CurrentTeamEvaluation)
-                .ToArray();
-
-            var captainId = allPlayers[0].PlayerInfo.Id;
-            var viceCaptainId = allPlayers[1].PlayerInfo.Id;
-
+            var captainAndVice = GetCaptainAndVice(squadAsDictionary);
+            
             foreach (var position in squadAsDictionary)
             {
                 var playersInPosition = position.Value
@@ -53,9 +51,13 @@ namespace FplManager.Application.Builders
                 .SelectMany(p => p)
                 .OrderBy(s => GetPositionInt(s.PlayerInfo.Position))
                 .ToList();
-            sortedTeam.ForEach(s => setTeam.AddPick(s, s.PlayerInfo.Id == captainId, s.PlayerInfo.Id == viceCaptainId));
+            sortedTeam.ForEach(s => setTeam.AddPick(
+                s, 
+                s.PlayerInfo.Id == captainAndVice[CaptainChar], 
+                s.PlayerInfo.Id == captainAndVice[ViceCaptainChar]
+             ));
 
-            var subKeeper = benchPlayers.Where(p => p.PlayerInfo.Position.Equals(FplPlayerPosition.Goalkeeper)).FirstOrDefault();
+            var subKeeper = benchPlayers.FirstOrDefault(p => p.PlayerInfo.Position.Equals(FplPlayerPosition.Goalkeeper));
             setTeam.AddPick(subKeeper);
 
             benchPlayers.Remove(subKeeper);
@@ -75,6 +77,33 @@ namespace FplManager.Application.Builders
 
             bool TeamHasMaxInPosition(FplPlayerPosition position)
                 => teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count());
+        }
+
+        private Dictionary<char, int> GetCaptainAndVice(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squadAsDictionary)
+        {
+            var playersToConsider = 5;
+            var capAndVice = new Dictionary<char, int>();
+
+            var initialCandidates = squadAsDictionary.Select(s => s.Value)
+                .SelectMany(s => s)
+                .OrderByDescending(s => s.CurrentTeamEvaluation)
+                .Take(playersToConsider);
+
+            var requiredEval = initialCandidates.Sum(s => s.CurrentTeamEvaluation) / playersToConsider;
+            var finalCandidates = initialCandidates.Where(i => i.CurrentTeamEvaluation >= requiredEval)
+                .OrderBy(x => Guid.NewGuid())
+                .ToList();
+
+            while (finalCandidates.Count < 2)
+            {
+                var candidateToAdd = initialCandidates.FirstOrDefault(i => !finalCandidates.Any(f => f.PlayerInfo.Id == i.PlayerInfo.Id));
+                finalCandidates.Add(candidateToAdd);
+            }
+
+            capAndVice.Add(CaptainChar, finalCandidates[0].PlayerInfo.Id);
+            capAndVice.Add(ViceCaptainChar, finalCandidates[1].PlayerInfo.Id);
+
+            return capAndVice;
         }
     }
 }

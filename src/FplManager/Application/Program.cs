@@ -37,7 +37,7 @@ namespace FplManager.Application
                 var authConfigAsDictionary = GetValues(authConfig);
                 await AuthenticateAsync(httpClient, appConfig.LogInUrl, authConfigAsDictionary);
 
-                await _teamOrchestratorService.ManageTeam(account.FplTeamId, account.TransferPercentile ,numberOfTransfers: 16);
+                await _teamOrchestratorService.ManageTeam(account.FplTeamId, account.TransferPercentile ,numberOfTransfers: 2);
             }
         }
 
