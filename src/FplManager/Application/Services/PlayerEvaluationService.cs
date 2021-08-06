@@ -1,4 +1,5 @@
 ﻿using FplClient.Data;
+using FplManager.Infrastructure.Constants;
 using FplManager.Infrastructure.Models;
 
 namespace FplManager.Application.Services
@@ -19,7 +20,8 @@ namespace FplManager.Application.Services
             var formDifferential = 1.0 - (1.0 / (player.Form + 1.0));
             var expectedPointsDifferential = 1.0 - (1.0 / (player?.EpNext + 1.0)) ?? 0.0;
             var costDifferential = 1.0 - (140.0 / (player?.NowCost)) ?? 0.0;
-            return (regEval * 0.3) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.3) + (costDifferential * 0.1);
+            var availabilityDifferential = setAvailabiltyDifferential(player.Status);
+            return (regEval * 0.3) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.3) + (costDifferential * 0.1) + availabilityDifferential;
         }
 
         public double EvaluateFreeHitPlayer(EvaluatedFplPlayer player)
@@ -33,5 +35,14 @@ namespace FplManager.Application.Services
         {
             return (double)(player.TransfersInEvent + 1) / (player.TransfersOutEvent + 1);
         }
+
+        private double setAvailabiltyDifferential(string playerStatus) =>
+            playerStatus switch
+            {
+                PlayerInfoConstants.AvailableStatus => 0,
+                PlayerInfoConstants.DoubtfulStatus => -0.5,
+                PlayerInfoConstants.InjuredStatus => -1,
+                _ => -1
+            };
     }
 }
