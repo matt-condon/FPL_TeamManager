@@ -1,5 +1,6 @@
 ﻿using FplClient.Data;
 using FplManager.Application.Services;
+using FplManager.Infrastructure.Constants;
 using FplManager.Infrastructure.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,9 +23,8 @@ namespace FplManager.Application.Builders
 
         private IEnumerable<EvaluatedFplPlayer> EvaluatePlayers(IEnumerable<FplPlayer> players, bool filterAvailability)
         {
-            var availableStatus = "a";
             var playerEvaluationService = new PlayerEvaluationService();
-            var filtered = players.Where(p => !filterAvailability || p.Status == availableStatus)
+            var filtered = players.Where(p => !filterAvailability || p.Status == PlayerInfoConstants.AvailableStatus)
                 .Select(p => new EvaluatedFplPlayer(p, playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p)))
                 .ToList();
 

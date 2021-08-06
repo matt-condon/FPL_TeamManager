@@ -1,4 +1,5 @@
 ﻿using FplClient.Data;
+using FplManager.Infrastructure.Constants;
 using FplManager.Infrastructure.Extensions;
 using FplManager.Infrastructure.Models;
 using System;
@@ -46,7 +47,8 @@ namespace FplManager.Application.Services
             int inBank)
         {
             return PositionsAreMatching(playerOut, playerIn)
-                && AreSquadRulesValid(playerOut, playerIn, existingSquad, inBank);
+                && AreSquadRulesValid(playerOut, playerIn, existingSquad, inBank)
+                && playerIn.PlayerInfo.Status == PlayerInfoConstants.AvailableStatus;
         }
 
         private bool PositionsAreMatching(EvaluatedFplPlayer playerOut, EvaluatedFplPlayer playerIn)
