@@ -21,6 +21,7 @@ namespace FplManager.Application.Services
         private readonly TransferWishlistBuilder _wishlistBuilder;
         private readonly FplPlayerDictionaryBuilder _dictionaryBuilder;
         private readonly TransferSelectorService _transferSelectorService;
+        private readonly TransferApprovalService _transferApprovalService;
         private readonly HttpClient _httpClient;
         private readonly FplPlayerClient _fplPlayerClient;
 
@@ -31,17 +32,22 @@ namespace FplManager.Application.Services
             _wishlistBuilder = new TransferWishlistBuilder();
             _dictionaryBuilder = new FplPlayerDictionaryBuilder();
             _transferSelectorService = new TransferSelectorService();
+            _transferApprovalService = new TransferApprovalService();
             _httpClient = httpClient;
             _fplPlayerClient = new FplPlayerClient(_httpClient);
         }
 
-        public async Task ManageTeam(int fplTeamId, double transferPercentile = 0.1, int numberOfTransfers = 0, int sleepBetweenTransfersMs = 2000)
+        public async Task ManageTeam(int fplTeamId, double transferPercentile = 0.1, int numberOfTransfers = 0, bool requireTransferApproval = false, bool freeTransfersOnly = true, int sleepBetweenTransfersMs = 2000)
         {
             var allPlayers = await GetPlayersAsync();
 
             for (int i = 0; i < numberOfTransfers; i++)
             {
                 var currentTeam = await GetTeamAsync(fplTeamId);
+
+                if (freeTransfersOnly && TeamHasNoFreeTransfers(currentTeam))
+                    break;
+
                 var fullTeam = _currentTeamBuilder.BuildTeamByPicks(currentTeam.Picks, allPlayers, startingTeamOnly: false);
 
                 var squadTransferList = _wishlistBuilder.BuildSquadTransferList(fullTeam);
@@ -53,8 +59,11 @@ namespace FplManager.Application.Services
                 var transferSelection = _transferSelectorService.SelectTransfer(fullTeam, transferTargetsList, squadTransferList, currentTeam.Transfers.Bank, transferPercentile);
                 PrintMyTransferSelection(transferSelection);
 
-                var gameweek = await GetComingGameweek();
-                await MakeTransferFromSelection(transferSelection, fplTeamId, gameweek);
+                if (!requireTransferApproval || _transferApprovalService.IsTransferApproved())
+                {
+                    var gameweek = await GetComingGameweek();
+                    await MakeTransferFromSelection(transferSelection, fplTeamId, gameweek);
+                }
 
                 System.Threading.Thread.Sleep(sleepBetweenTransfersMs);
             }
@@ -62,7 +71,7 @@ namespace FplManager.Application.Services
             var updatedCurrentTeam = await GetTeamAsync(fplTeamId);
             var updatedFullTeam = _currentTeamBuilder.BuildTeamByPicks(updatedCurrentTeam.Picks, allPlayers, startingTeamOnly: false);
             await SelectCurrentTeam(updatedFullTeam, fplTeamId);
-            //PrintCurrentTeam(fullTeam);
+            //PrintCurrentTeam(updatedFullTeam);
 
         }
 
@@ -87,6 +96,12 @@ namespace FplManager.Application.Services
             }
 
             return null;
+        }
+
+        //TBD: Confirm this logic for GW3
+        private bool TeamHasNoFreeTransfers(MyTeamModel currentTeam)
+        {
+            return currentTeam.Transfers.Limit == currentTeam.Transfers.Made;
         }
 
         private async Task SelectCurrentTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullTeam, int fplTeamId)

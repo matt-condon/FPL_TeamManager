@@ -11,7 +11,8 @@ namespace FplManager.Application.Services
         {
             var transferDifferential = (player.TransfersInEvent > player.TransfersOutEvent) ? (1 - (1 / EvaluateTransferDifferential(player))) : (EvaluateTransferDifferential(player) - 1);
             var ownershipMultiplier = 1 - 1 / player.OwnershipPercentage;
-            return (transferDifferential * 0.75) + (ownershipMultiplier * 0.75);
+            var availabilityDifferential = setAvailabiltyDifferential(player.Status);
+            return (transferDifferential * 0.75) + (ownershipMultiplier * 0.75) + availabilityDifferential;
         }
 
         public double EvaluateCurrentTeamPlayer(FplPlayer player)
@@ -21,7 +22,8 @@ namespace FplManager.Application.Services
             var expectedPointsDifferential = 1.0 - (1.0 / (player?.EpNext + 1.0)) ?? 0.0;
             var costDifferential = 1.0 - (140.0 / (player?.NowCost)) ?? 0.0;
             var availabilityDifferential = setAvailabiltyDifferential(player.Status);
-            return (regEval * 0.3) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.3) + (costDifferential * 0.1) + availabilityDifferential;
+            var currentTeamEval = (regEval * 0.25) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.9) + (costDifferential * 0.15) + availabilityDifferential;
+            return currentTeamEval;
         }
 
         public double EvaluateFreeHitPlayer(EvaluatedFplPlayer player)

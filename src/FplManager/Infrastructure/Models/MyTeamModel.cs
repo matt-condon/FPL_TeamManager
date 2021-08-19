@@ -36,6 +36,8 @@ namespace FplManager.Infrastructure.Models
     {
         [JsonProperty("cost")]
         public int Cost { get; set; }
+        [JsonProperty("limit")]
+        public int Limit { get; set; }
         [JsonProperty("made")]
         public int Made { get; set; }
         [JsonProperty("bank")]

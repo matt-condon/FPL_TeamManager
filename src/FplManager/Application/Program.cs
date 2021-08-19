@@ -14,6 +14,9 @@ namespace FplManager.Application
     public class Program
     {
         private const bool TestOnly = false;
+        private const int NumberOfTransfers = 1;
+        private const bool RequireTransferApproval = true;
+        private const bool FreeTransfersOnly = true;
 
         private static TeamOrchestratorService _teamOrchestratorService;
 
@@ -37,7 +40,7 @@ namespace FplManager.Application
                 var authConfigAsDictionary = GetValues(authConfig);
                 await AuthenticateAsync(httpClient, appConfig.LogInUrl, authConfigAsDictionary);
 
-                await _teamOrchestratorService.ManageTeam(account.FplTeamId, account.TransferPercentile ,numberOfTransfers: 2);
+                await _teamOrchestratorService.ManageTeam(account.FplTeamId, account.TransferPercentile , NumberOfTransfers, RequireTransferApproval, FreeTransfersOnly);
             }
         }
 
