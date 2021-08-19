@@ -89,8 +89,8 @@ namespace FplManager.Application.Builders
                 .OrderByDescending(s => s.CurrentTeamEvaluation)
                 .Take(playersToConsider);
 
-            var requiredEval = initialCandidates.Sum(s => s.CurrentTeamEvaluation) / playersToConsider;
-            var finalCandidates = initialCandidates.Where(i => i.CurrentTeamEvaluation >= requiredEval)
+            var requiredEval = (initialCandidates.Sum(s => s.CurrentTeamEvaluation) / playersToConsider) * 1.1;
+            var finalCandidates = initialCandidates.Where(i => i.CurrentTeamEvaluation > requiredEval)
                 .OrderBy(x => Guid.NewGuid())
                 .ToList();
 
