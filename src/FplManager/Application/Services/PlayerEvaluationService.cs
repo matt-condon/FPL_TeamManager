@@ -20,10 +20,19 @@ namespace FplManager.Application.Services
             var regEval = EvaluatePlayerByTransfersAndOwnership(player);
             var formDifferential = 1.0 - (1.0 / (player.Form + 1.0));
             var expectedPointsDifferential = 1.0 - (1.0 / (player?.EpNext + 1.0)) ?? 0.0;
-            var costDifferential = 1.0 - (140.0 / (player?.NowCost)) ?? 0.0;
+            var costDifferential = 1.0 - ((player?.NowCost)/140.0) ?? 0.0;
             var availabilityDifferential = setAvailabiltyDifferential(player.Status);
             var currentTeamEval = (regEval * 0.25) + (formDifferential * 0.3) + (expectedPointsDifferential * 0.9) + (costDifferential * 0.15) + availabilityDifferential;
             return currentTeamEval;
+        }
+
+        public double EvaluateTransferListViability(FplPlayer player)
+        {
+            var teamEval = EvaluateCurrentTeamPlayer(player);
+            var costDifferential = 1.0 - ((player?.NowCost)/140.0) ?? 0.0;
+            var availabilityDifferential = setAvailabiltyDifferential(player.Status);
+            var transferListEval = (teamEval) - (costDifferential * 0.15) + availabilityDifferential;
+            return transferListEval;
         }
 
         public double EvaluateFreeHitPlayer(EvaluatedFplPlayer player)

@@ -14,15 +14,17 @@ namespace FplManager.Infrastructure.Models
             SellingPrice = DefaultSellingPrice;
         }
 
-        public EvaluatedFplPlayer(CurrentFplPlayer currentFplPlayer, double evaluation, double currentTeamEval)
+        public EvaluatedFplPlayer(CurrentFplPlayer currentFplPlayer, double evaluation, double currentTeamEval, double transferListViability = 0)
         {
             PlayerInfo = currentFplPlayer.PlayerInfo;
             SellingPrice = currentFplPlayer.SellingPrice;
             Evaluation = evaluation;
             CurrentTeamEvaluation = currentTeamEval;
+            TransferListViability = transferListViability;
         }
 
         public double Evaluation { get; private set; }
+        public double TransferListViability { get; set; }
     }
 
     public class CurrentFplPlayer

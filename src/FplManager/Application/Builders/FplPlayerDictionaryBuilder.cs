@@ -49,7 +49,8 @@ namespace FplManager.Application.Builders
                 p => new EvaluatedFplPlayer(
                     p, 
                     playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p.PlayerInfo),
-                    playerEvaluationService.EvaluateCurrentTeamPlayer(p.PlayerInfo)))
+                    playerEvaluationService.EvaluateCurrentTeamPlayer(p.PlayerInfo),
+                    playerEvaluationService.EvaluateTransferListViability(p.PlayerInfo)))
                 .ToList();
 
             return filtered;

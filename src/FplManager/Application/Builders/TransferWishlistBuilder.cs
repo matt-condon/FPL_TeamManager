@@ -41,14 +41,9 @@ namespace FplManager.Application.Builders
         {
             var orderedList = existingSquad.Values
                 .SelectMany(p => p)
-                .OrderBy(p => EvaluateTransferListViability(p.PlayerInfo))
+                .OrderBy(p => p.TransferListViability)
                 .ToList();
             return orderedList;
-        }
-
-        private double EvaluateTransferListViability(FplPlayer player)
-        {
-            return _playerEvaluationService.EvaluateCurrentTeamPlayer(player);
         }
     }
 }

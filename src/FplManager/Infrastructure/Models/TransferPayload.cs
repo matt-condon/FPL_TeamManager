@@ -6,7 +6,7 @@ namespace FplManager.Infrastructure.Models
     public class TransferPayload
     {
         [JsonProperty("chip")]
-        public ICollection<CurrentTeamChips> Chip { get; set; }
+        public string Chip { get; set; }
         [JsonProperty("entry")]
         public int TeamId { get; set; }
         [JsonProperty("event")]
@@ -42,5 +42,15 @@ namespace FplManager.Infrastructure.Models
         public EvaluatedFplPlayer PlayerOut { get; set; }
         [JsonIgnore]
         public EvaluatedFplPlayer PlayerIn { get; set; }
+    }
+
+    public class TransferChip
+    {
+        [JsonProperty("chip")]
+        public string Chip { get; set; }
+        [JsonProperty("entry")]
+        public int Entry { get; set; }
+        [JsonProperty("event")]
+        public int Event { get; set; }
     }
 }
