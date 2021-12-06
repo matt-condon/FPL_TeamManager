@@ -29,7 +29,7 @@ namespace FplManager.Application.Services
             var possibleTransfers = transferTargetsWishList
                 .SelectMany(w => squadTransferList
                 .Where(s => IsValidTransfer(s, w, existingSquad, inBank))
-                .Select(s => new TransferModel(s, w, w.Evaluation - s.Evaluation, s.SellingPrice, w.PlayerInfo.NowCost)))
+                .Select(s => new TransferModel(s, w, w.Evaluation - s.TransferListViability, s.SellingPrice, w.PlayerInfo.NowCost)))
                 .OrderByDescending(t => t.EvalDifference);
 
             /* for debugging purposes */

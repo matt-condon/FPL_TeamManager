@@ -1,6 +1,7 @@
 ﻿using FplClient.Clients;
 using FplClient.Data;
 using FplManager.Application.Builders;
+using FplManager.Infrastructure.Constants;
 using FplManager.Infrastructure.Extensions;
 using FplManager.Infrastructure.Models;
 using Newtonsoft.Json;
@@ -37,7 +38,7 @@ namespace FplManager.Application.Services
             _fplPlayerClient = new FplPlayerClient(_httpClient);
         }
 
-        public async Task ManageTeam(int fplTeamId, double transferPercentile = 0.1, int numberOfTransfers = 0, bool requireTransferApproval = false, bool freeTransfersOnly = true, int sleepBetweenTransfersMs = 2000)
+        public async Task ManageTeam(int fplTeamId, double transferPercentile = 0.1, int numberOfTransfers = 0, bool requireTransferApproval = false, bool freeTransfersOnly = true, bool useWC = false, int sleepBetweenTransfersMs = 2000)
         {
             var allPlayers = await GetPlayersAsync();
 
@@ -45,7 +46,8 @@ namespace FplManager.Application.Services
             {
                 var currentTeam = await GetTeamAsync(fplTeamId);
 
-                if (freeTransfersOnly && TeamHasNoFreeTransfers(currentTeam))
+                bool playingWC = false;
+                if (!PlayingWC(currentTeam.Chips, useWC, out playingWC) && freeTransfersOnly && TeamHasNoFreeTransfers(currentTeam))
                     break;
 
                 var fullTeam = _currentTeamBuilder.BuildTeamByPicks(currentTeam.Picks, allPlayers, startingTeamOnly: false);
@@ -62,7 +64,7 @@ namespace FplManager.Application.Services
                 if (!requireTransferApproval || _transferApprovalService.IsTransferApproved())
                 {
                     var gameweek = await GetComingGameweek();
-                    await MakeTransferFromSelection(transferSelection, fplTeamId, gameweek);
+                    await MakeTransferFromSelection(transferSelection, fplTeamId, gameweek, playingWC);
                 }
 
                 System.Threading.Thread.Sleep(sleepBetweenTransfersMs);
@@ -98,10 +100,21 @@ namespace FplManager.Application.Services
             return null;
         }
 
-        //TBD: Confirm this logic for GW3
         private bool TeamHasNoFreeTransfers(MyTeamModel currentTeam)
         {
-            return currentTeam.Transfers.Limit == currentTeam.Transfers.Made;
+            return currentTeam.Transfers.Limit <= currentTeam.Transfers.Made;
+        }
+
+
+        private bool PlayingWC(ICollection<CurrentTeamChips> chips, bool useWC, out bool playingWC)
+        {
+            var wcChip = chips.First(c => c.Name == ChipNameConstants.WC);
+            playingWC = useWC && wcChip.Status.Equals(ChipNameConstants.ChipAvailable) || wcChip.Status.Equals(ChipNameConstants.ChipActive);
+            
+            if (useWC && !playingWC)
+                Console.WriteLine($"Cannot play WC. Chip not available or active");
+            
+            return playingWC;
         }
 
         private async Task SelectCurrentTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullTeam, int fplTeamId)
@@ -140,13 +153,14 @@ namespace FplManager.Application.Services
             return fixtures.First(n => n.IsNext).Id;
         }
 
-        private async Task MakeTransferFromSelection(TransferModel transferSelection, int fplTeamId, int gameweek)
+        private async Task MakeTransferFromSelection(TransferModel transferSelection, int fplTeamId, int gameweek, bool playingWC)
         {
             var transferPayload = new TransferPayload()
             {
                 TeamId = fplTeamId,
                 GameWeek = gameweek,
-                Transfers = new TransferModel[] { transferSelection }
+                Transfers = new TransferModel[] { transferSelection },
+                Chip = playingWC ? ChipNameConstants.WC : null
             };
 
             string json = JsonConvert.SerializeObject(transferPayload);
@@ -159,7 +173,7 @@ namespace FplManager.Application.Services
 
             if (getTeamResponse.StatusCode != HttpStatusCode.OK)
             {
-                Console.WriteLine($"Select Current Team Failed. StatusCode: {getTeamResponse.StatusCode}");
+                Console.WriteLine($"Make Transfers From Selection Failed. StatusCode: {getTeamResponse.StatusCode}");
             }
         }
 
