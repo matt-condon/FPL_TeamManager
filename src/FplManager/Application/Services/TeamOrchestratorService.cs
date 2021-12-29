@@ -15,7 +15,15 @@ using System.Threading.Tasks;
 
 namespace FplManager.Application.Services
 {
-    public class TeamOrchestratorService
+    public interface ITeamOrchestratorService
+    {
+        Task ManageTeam(
+            int fplTeamId, double transferPercentile, int numberOfTransfers, bool requireTransferApproval,
+            bool freeTransfersOnly, bool useWC, int sleepBetweenTransfersMs = 2000
+        );
+    }
+
+    public class TeamOrchestratorService : ITeamOrchestratorService
     {
         private readonly CurrentTeamBuilder _currentTeamBuilder;
         private readonly SetTeamBuilder _setTeamBuilder;
@@ -38,7 +46,8 @@ namespace FplManager.Application.Services
             _fplPlayerClient = new FplPlayerClient(_httpClient);
         }
 
-        public async Task ManageTeam(int fplTeamId, double transferPercentile = 0.1, int numberOfTransfers = 0, bool requireTransferApproval = false, bool freeTransfersOnly = true, bool useWC = false, int sleepBetweenTransfersMs = 2000)
+        public async Task ManageTeam(int fplTeamId, double transferPercentile, int numberOfTransfers, bool requireTransferApproval, 
+            bool freeTransfersOnly, bool useWC, int sleepBetweenTransfersMs)
         {
             var allPlayers = await GetPlayersAsync();
 
@@ -110,10 +119,10 @@ namespace FplManager.Application.Services
         {
             var wcChip = chips.First(c => c.Name == ChipNameConstants.WC);
             playingWC = useWC && wcChip.Status.Equals(ChipNameConstants.ChipAvailable) || wcChip.Status.Equals(ChipNameConstants.ChipActive);
-            
+
             if (useWC && !playingWC)
                 Console.WriteLine($"Cannot play WC. Chip not available or active");
-            
+
             return playingWC;
         }
 
