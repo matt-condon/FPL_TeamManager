@@ -8,5 +8,6 @@
         public const string TC = "3xc";
         public const string ChipAvailable = "available";
         public const string ChipActive = "active";
+        public const string ChipPlayed = "played";
     }
 }
