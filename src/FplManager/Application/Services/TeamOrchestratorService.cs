@@ -55,8 +55,7 @@ namespace FplManager.Application.Services
             {
                 var currentTeam = await GetTeamAsync(fplTeamId);
 
-                bool playingWC = false;
-                if (!PlayingWC(currentTeam.Chips, useWC, out playingWC) && freeTransfersOnly && TeamHasNoFreeTransfers(currentTeam))
+                if (!PlayingWC(currentTeam.Chips, useWC, out bool shouldPlayWC) && freeTransfersOnly && TeamHasNoFreeTransfers(currentTeam))
                     break;
 
                 var fullTeam = _currentTeamBuilder.BuildTeamByPicks(currentTeam.Picks, allPlayers, startingTeamOnly: false);
@@ -73,7 +72,7 @@ namespace FplManager.Application.Services
                 if (!requireTransferApproval || _transferApprovalService.IsTransferApproved())
                 {
                     var gameweek = await GetComingGameweek();
-                    await MakeTransferFromSelection(transferSelection, fplTeamId, gameweek, playingWC);
+                    await MakeTransferFromSelection(transferSelection, fplTeamId, gameweek, shouldPlayWC);
                 }
 
                 System.Threading.Thread.Sleep(sleepBetweenTransfersMs);
@@ -115,15 +114,15 @@ namespace FplManager.Application.Services
         }
 
 
-        private bool PlayingWC(ICollection<CurrentTeamChips> chips, bool useWC, out bool playingWC)
+        private bool PlayingWC(ICollection<CurrentTeamChips> chips, bool useWC, out bool activatingWC)
         {
             var wcChip = chips.First(c => c.Name == ChipNameConstants.WC);
-            playingWC = useWC && wcChip.Status.Equals(ChipNameConstants.ChipAvailable) || wcChip.Status.Equals(ChipNameConstants.ChipActive);
-
-            if (useWC && !playingWC)
+            activatingWC = useWC && (wcChip.Status.Equals(ChipNameConstants.ChipAvailable) || wcChip.Status.Equals(ChipNameConstants.ChipActive));
+            
+            if (useWC && !activatingWC)
                 Console.WriteLine($"Cannot play WC. Chip not available or active");
-
-            return playingWC;
+            
+            return activatingWC;
         }
 
         private async Task SelectCurrentTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> fullTeam, int fplTeamId)
@@ -162,14 +161,14 @@ namespace FplManager.Application.Services
             return fixtures.First(n => n.IsNext).Id;
         }
 
-        private async Task MakeTransferFromSelection(TransferModel transferSelection, int fplTeamId, int gameweek, bool playingWC)
+        private async Task MakeTransferFromSelection(TransferModel transferSelection, int fplTeamId, int gameweek, bool shouldPlayWC)
         {
             var transferPayload = new TransferPayload()
             {
                 TeamId = fplTeamId,
                 GameWeek = gameweek,
                 Transfers = new TransferModel[] { transferSelection },
-                Chip = playingWC ? ChipNameConstants.WC : null
+                Chip = shouldPlayWC ? ChipNameConstants.WC : null
             };
 
             string json = JsonConvert.SerializeObject(transferPayload);
