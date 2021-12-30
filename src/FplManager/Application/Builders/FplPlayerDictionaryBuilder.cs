@@ -12,8 +12,20 @@ namespace FplManager.Application.Builders
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFilteredPlayerDictionary(IEnumerable<T> players, bool filterAvailability = true);
     }
 
-    public class FplPlayerDictionaryBuilder : IPlayerDictionaryBuilder<FplPlayer>
+    public abstract class BasePlayerDictionaryBuilder
     {
+        protected readonly IPlayerEvaluationService _playerEvaluationService;
+        
+        protected BasePlayerDictionaryBuilder(IPlayerEvaluationService playerEvaluationService)
+        {
+            _playerEvaluationService = playerEvaluationService;
+        }
+    }
+
+    public class FplPlayerDictionaryBuilder : BasePlayerDictionaryBuilder, IPlayerDictionaryBuilder<FplPlayer>
+    {
+        public FplPlayerDictionaryBuilder(IPlayerEvaluationService playerEvaluationService) : base(playerEvaluationService) { }
+
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFilteredPlayerDictionary(IEnumerable<FplPlayer> players, bool filterAvailability = true)
         {
             var availablePlayers = EvaluatePlayers(players, filterAvailability);
@@ -23,17 +35,18 @@ namespace FplManager.Application.Builders
 
         private IEnumerable<EvaluatedFplPlayer> EvaluatePlayers(IEnumerable<FplPlayer> players, bool filterAvailability)
         {
-            var playerEvaluationService = new PlayerEvaluationService();
             var filtered = players.Where(p => !filterAvailability || p.Status == PlayerInfoConstants.AvailableStatus)
-                .Select(p => new EvaluatedFplPlayer(p, playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p)))
+                .Select(p => new EvaluatedFplPlayer(p, _playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p)))
                 .ToList();
 
             return filtered;
         }
     }
 
-    public class CurrentFplPlayerDictionaryBuilder : IPlayerDictionaryBuilder<CurrentFplPlayer>
+    public class CurrentFplPlayerDictionaryBuilder : BasePlayerDictionaryBuilder, IPlayerDictionaryBuilder<CurrentFplPlayer>
     {
+        public CurrentFplPlayerDictionaryBuilder(IPlayerEvaluationService playerEvaluationService) : base(playerEvaluationService) { }
+
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFilteredPlayerDictionary(IEnumerable<CurrentFplPlayer> players, bool filterAvailability = true)
         {
             var evaluatedPlayers = EvaluatePlayers(players);
@@ -44,13 +57,12 @@ namespace FplManager.Application.Builders
 
         private IEnumerable<EvaluatedFplPlayer> EvaluatePlayers(IEnumerable<CurrentFplPlayer> players)
         {
-            var playerEvaluationService = new PlayerEvaluationService();
             var filtered = players.Select(
                 p => new EvaluatedFplPlayer(
                     p, 
-                    playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p.PlayerInfo),
-                    playerEvaluationService.EvaluateCurrentTeamPlayer(p.PlayerInfo),
-                    playerEvaluationService.EvaluateTransferListViability(p.PlayerInfo)))
+                    _playerEvaluationService.EvaluatePlayerByTransfersAndOwnership(p.PlayerInfo),
+                    _playerEvaluationService.EvaluateCurrentTeamPlayer(p.PlayerInfo),
+                    _playerEvaluationService.EvaluateTransferListViability(p.PlayerInfo)))
                 .ToList();
 
             return filtered;

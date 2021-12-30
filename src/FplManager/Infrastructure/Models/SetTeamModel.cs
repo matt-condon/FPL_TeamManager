@@ -1,5 +1,4 @@
-﻿using FplClient.Data;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace FplManager.Infrastructure.Models
@@ -24,7 +23,7 @@ namespace FplManager.Infrastructure.Models
         }
 
         [JsonProperty("picks")]
-        public List<SetTeamPick> Picks { get; set; }
+        public List<SetTeamPick> Picks { get; private set; }
         [JsonProperty("chip")]
         public ICollection<CurrentTeamChips> Chip { get; set; }
     }

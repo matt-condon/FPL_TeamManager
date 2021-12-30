@@ -6,14 +6,24 @@ using System.Linq;
 
 namespace FplManager.Application.Builders
 {
-    public class SetTeamBuilder
+    public interface ISetTeamBuilder
+    {
+        SetTeamModel BuildTeamToBeSet(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squadAsDictionary);
+    }
+    
+    public class SetTeamBuilder : ISetTeamBuilder
     {
         private const char CaptainChar = 'C';
         private const char ViceCaptainChar = 'V';
+        private readonly TeamPositionPlayerLimits _teamPositionLimits;
+
+        public SetTeamBuilder()
+        {
+            _teamPositionLimits = new TeamPositionPlayerLimits();
+        }
 
         public SetTeamModel BuildTeamToBeSet(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squadAsDictionary)
         {
-            var teamPositionLimits = new TeamPositionPlayerLimits();
             var startingTeam = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
             var setTeam = new SetTeamModel();
 
@@ -23,7 +33,7 @@ namespace FplManager.Application.Builders
             {
                 var playersInPosition = position.Value
                     .OrderByDescending(p => p.CurrentTeamEvaluation)
-                    .Take(teamPositionLimits.Limits[position.Key].Minimum).ToList();
+                    .Take(_teamPositionLimits.Limits[position.Key].Minimum).ToList();
 
                 startingTeam.Add(position.Key, playersInPosition);
             }
@@ -76,7 +86,7 @@ namespace FplManager.Application.Builders
             }
 
             bool TeamHasMaxInPosition(FplPlayerPosition position)
-                => teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count());
+                => _teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count());
         }
 
         private Dictionary<char, int> GetCaptainAndVice(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squadAsDictionary)

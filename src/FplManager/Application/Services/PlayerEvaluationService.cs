@@ -4,7 +4,16 @@ using FplManager.Infrastructure.Models;
 
 namespace FplManager.Application.Services
 {
-    public class PlayerEvaluationService
+
+    public interface IPlayerEvaluationService
+    {
+        double EvaluatePlayerByTransfersAndOwnership(FplPlayer player);
+        double EvaluateCurrentTeamPlayer(FplPlayer player);
+        double EvaluateTransferListViability(FplPlayer player);
+        double EvaluateFreeHitPlayer(EvaluatedFplPlayer player);
+    }
+
+    public class PlayerEvaluationService : IPlayerEvaluationService
     {
         //simple approach for initial team building :: evaluation based on transfers in/out and ownership (collective intelligence)
         public double EvaluatePlayerByTransfersAndOwnership(FplPlayer player)

@@ -10,18 +10,26 @@ namespace FplManager.Application.Builders
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByPicks(ICollection<T> picks, IEnumerable<FplPlayer> allPlayers, bool startingTeamOnly = true);
     }
 
-    public abstract class TeamBuilderBase
+    public abstract class TeamBuilderBase<T>
     {
+        protected readonly IPlayerDictionaryBuilder<T> _playerDictionaryBuilder;
+        protected readonly TeamPositionPlayerLimits _teamPositionLimits;
+
+        protected TeamBuilderBase(IPlayerDictionaryBuilder<T> playerDictionaryBuilder)
+        {
+            _playerDictionaryBuilder = playerDictionaryBuilder;
+            _teamPositionLimits = new TeamPositionPlayerLimits();
+        }
+
         protected Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildStartingTeam(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
         {
-            var teamPositionLimits = new TeamPositionPlayerLimits();
             var startingTeam = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
 
             foreach (var position in squad)
             {
                 var playersInPosition = position.Value
                     .OrderByDescending(p => p.CurrentTeamEvaluation)
-                    .Take(teamPositionLimits.Limits[position.Key].Minimum).ToList();
+                    .Take(_teamPositionLimits.Limits[position.Key].Minimum).ToList();
 
                 startingTeam.Add(position.Key, playersInPosition);
             }
@@ -37,7 +45,7 @@ namespace FplManager.Application.Builders
                 {
                     startingTeam[benchPlayer.PlayerInfo.Position].Add(benchPlayer);
                 }
-                if (startingTeam.Values.Sum(c => c.Count()) == 11)
+                if (startingTeam.Values.Sum(c => c.Count) == 11)
                 {
                     break;
                 }
@@ -46,12 +54,14 @@ namespace FplManager.Application.Builders
             return startingTeam;
 
             bool TeamHasMaxInPosition(FplPlayerPosition position)
-                => teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count);
+                => _teamPositionLimits.Limits[position].Maximum.Equals(startingTeam[position].Count);
         }
     }
 
-    public class EntryTeamBuilder : TeamBuilderBase, ITeamBuilder<FplPick>
+    public class EntryTeamBuilder : TeamBuilderBase<FplPlayer>, ITeamBuilder<FplPick>
     {
+        public EntryTeamBuilder(IPlayerDictionaryBuilder<FplPlayer> playerDictionaryBuilder) : base(playerDictionaryBuilder) { }
+
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByPicks(ICollection<FplPick> picks, IEnumerable<FplPlayer> allPlayers, bool startingTeamOnly = true)
         {
             var fullSquad = BuildFullSquadModel(picks, allPlayers);
@@ -66,15 +76,15 @@ namespace FplManager.Application.Builders
 
         private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFullSquadModel(ICollection<FplPick> entryPicks, IEnumerable<FplPlayer> allPlayers)
         {
-            var dictionaryBuilder = new FplPlayerDictionaryBuilder();
-
-            var picksAsPlayers = allPlayers.Where(p => entryPicks.Any(s => s.PlayerId == p.Id)).ToList();
-            return dictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false);
+            var picksAsPlayers = allPlayers.Where(p => entryPicks.Any(s => s.PlayerId == p.Id));
+            return _playerDictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false);
         }
     }
 
 
-    public class CurrentTeamBuilder : TeamBuilderBase, ITeamBuilder<CurrentTeamPick> { 
+    public class CurrentTeamBuilder : TeamBuilderBase<CurrentFplPlayer>, ITeamBuilder<CurrentTeamPick> {
+        public CurrentTeamBuilder(IPlayerDictionaryBuilder<CurrentFplPlayer> playerDictionaryBuilder) : base(playerDictionaryBuilder) { }
+
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByPicks(ICollection<CurrentTeamPick> picks, IEnumerable<FplPlayer> allPlayers, bool startingTeamOnly = true)
         {
             var fullSquad = BuildFullSquadModel(picks, allPlayers);
@@ -94,12 +104,10 @@ namespace FplManager.Application.Builders
 
         private Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildFullSquadModel(ICollection<CurrentTeamPick> entryPicks, IEnumerable<FplPlayer> allPlayers)
         {
-            var dictionaryBuilder = new CurrentFplPlayerDictionaryBuilder();
-
             var picksAsPlayers = allPlayers.Join(entryPicks, p => p.Id, d => d.PlayerId, (fplPlayer, currentPlayer)
             => new CurrentFplPlayer(fplPlayer, currentPlayer.SellingPrice)).ToList();
 
-            return dictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false);
+            return _playerDictionaryBuilder.BuildFilteredPlayerDictionary(picksAsPlayers, filterAvailability: false);
         }
     }
 }
