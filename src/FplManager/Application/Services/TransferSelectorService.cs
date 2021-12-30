@@ -8,13 +8,21 @@ using System.Linq;
 
 namespace FplManager.Application.Services
 {
-    public class TransferSelectorService
+    public interface ITransferSelectorService
     {
-        private readonly SquadRuleService _squadRuleService;
+        TransferModel SelectTransfer(
+            Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad,
+            List<EvaluatedFplPlayer> transferTargetsWishList,
+            List<EvaluatedFplPlayer> squadTransferList,
+            int inBank,
+            double transferPercentile);
+    }
+
+    public class TransferSelectorService : ITransferSelectorService
+    {
         private readonly Random _getRandom;
         public TransferSelectorService()
         {
-            _squadRuleService = new SquadRuleService();
             _getRandom = new Random();
         }
 
@@ -72,7 +80,7 @@ namespace FplManager.Application.Services
             var newSquad = existingSquad.Where(p => p.Key != position)
                 .ToDictionary(p => p.Key, p => p.Value);
             newSquad.Add(position, squadPositionValues);
-            var transferIsValid = _squadRuleService.IsValidSquad(newSquad, currentSquadCost, inBank);
+            var transferIsValid = newSquad.IsValidSquad(currentSquadCost, inBank);
             return transferIsValid;
         }
 

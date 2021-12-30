@@ -1,7 +1,4 @@
-﻿using FplClient.Data;
-using FplManager.Infrastructure.Constants;
-using FplManager.Infrastructure.Extensions;
-using System;
+﻿using System;
 
 namespace FplManager.Application.Services
 {

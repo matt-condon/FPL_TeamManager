@@ -1,4 +1,5 @@
-﻿using FplClient.Clients;
+﻿using FplClient;
+using FplClient.Clients;
 using FplClient.Data;
 using FplManager.Application.Builders;
 using FplManager.Infrastructure.Constants;
@@ -25,29 +26,37 @@ namespace FplManager.Application.Services
 
     public class TeamOrchestratorService : ITeamOrchestratorService
     {
-        private readonly CurrentTeamBuilder _currentTeamBuilder;
-        private readonly SetTeamBuilder _setTeamBuilder;
-        private readonly TransferWishlistBuilder _wishlistBuilder;
-        private readonly FplPlayerDictionaryBuilder _dictionaryBuilder;
-        private readonly TransferSelectorService _transferSelectorService;
+        private readonly ITeamBuilder<CurrentTeamPick> _currentTeamBuilder;
+        private readonly ITransferWishlistBuilder _wishlistBuilder;
+        private readonly IPlayerDictionaryBuilder<FplPlayer> _dictionaryBuilder;
+        private readonly IFplPlayerClient _fplPlayerClient;
+        private readonly ISetTeamBuilder _setTeamBuilder;
+        private readonly ITransferSelectorService _transferSelectorService;
         private readonly TransferApprovalService _transferApprovalService;
         private readonly HttpClient _httpClient;
-        private readonly FplPlayerClient _fplPlayerClient;
 
-        public TeamOrchestratorService(HttpClient httpClient)
+        public TeamOrchestratorService(
+            ITeamBuilder<CurrentTeamPick> currentTeamBuilder, 
+            IPlayerDictionaryBuilder<FplPlayer> dictionaryBuilder,
+            ITransferWishlistBuilder transferWishlistBuilder,
+            IFplPlayerClient fplPlayerClient,
+            ISetTeamBuilder setTeamBuilder,
+            ITransferSelectorService transferSelectorService,
+            HttpClient httpClient
+        )
         {
-            _currentTeamBuilder = new CurrentTeamBuilder();
-            _setTeamBuilder = new SetTeamBuilder();
-            _wishlistBuilder = new TransferWishlistBuilder();
-            _dictionaryBuilder = new FplPlayerDictionaryBuilder();
-            _transferSelectorService = new TransferSelectorService();
+            _currentTeamBuilder = currentTeamBuilder;
+            _wishlistBuilder = transferWishlistBuilder;
+            _dictionaryBuilder = dictionaryBuilder;
+            _fplPlayerClient = fplPlayerClient;
+            _setTeamBuilder = setTeamBuilder;
+            _transferSelectorService = transferSelectorService;
             _transferApprovalService = new TransferApprovalService();
             _httpClient = httpClient;
-            _fplPlayerClient = new FplPlayerClient(_httpClient);
         }
 
         public async Task ManageTeam(int fplTeamId, double transferPercentile, int numberOfTransfers, bool requireTransferApproval, 
-            bool freeTransfersOnly, bool useWC, int sleepBetweenTransfersMs)
+            bool freeTransfersOnly, bool useWC, int sleepBetweenTransfersMs = 2000)
         {
             var allPlayers = await GetPlayersAsync();
 

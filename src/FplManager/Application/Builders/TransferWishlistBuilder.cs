@@ -1,20 +1,23 @@
 ﻿using FplClient.Data;
-using FplManager.Application.Services;
 using FplManager.Infrastructure.Models;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace FplManager.Application.Builders
 {
-    public class TransferWishlistBuilder
+    public interface ITransferWishlistBuilder
     {
-        readonly PlayerEvaluationService _playerEvaluationService;
+        List<EvaluatedFplPlayer> BuildTransferTargetWishlist(
+            Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> allPlayers,
+            Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad,
+            int numberOfPlayers = 200);
 
-        public TransferWishlistBuilder()
-        {
-            _playerEvaluationService = new PlayerEvaluationService();
-        }
+        List<EvaluatedFplPlayer> BuildSquadTransferList(
+            Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad);
+    }
 
+    public class TransferWishlistBuilder: ITransferWishlistBuilder
+    {
         public List<EvaluatedFplPlayer> BuildTransferTargetWishlist(
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> allPlayers, 
             Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> existingSquad, 

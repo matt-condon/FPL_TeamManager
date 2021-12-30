@@ -1,4 +1,5 @@
 ﻿using FplClient.Data;
+using FplManager.Infrastructure.Constants;
 using FplManager.Infrastructure.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +8,9 @@ namespace FplManager.Infrastructure.Extensions
 {
     public static class SquadExtensions
     {
-        public static int CountNumberOfPlayers(this Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        public static bool IsValidSquad(this Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad, int currentCost = SquadRuleConstants.MaxTotalCost, int inBank = 0)
         {
-            return squad.Values
-                .SelectMany(list => list)
-                .Distinct()
-                .Count();
+            return squad.MeetsTeamsCriteria() && squad.MeetsCostCriteria(currentCost, inBank);
         }
 
         public static int GetSquadCost(this Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
@@ -41,6 +39,21 @@ namespace FplManager.Infrastructure.Extensions
                 }
             }
             return squadString;
+        }
+
+        private static bool MeetsCostCriteria(this Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad, int currentCost, int inBank)
+        {
+            var newCost = squad.GetSquadCost();
+            var availableFunds = currentCost + inBank;
+            return MeetsMinCostCriteria() && newCost <= availableFunds;
+
+            bool MeetsMinCostCriteria() => newCost >= SquadRuleConstants.MinTotalCost || newCost > currentCost;
+        }
+
+        private static bool MeetsTeamsCriteria(this Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> squad)
+        {
+            var groupedPlayers = squad.Values.SelectMany(list => list).GroupBy(p => p.PlayerInfo.TeamId);
+            return !groupedPlayers.Any(g => g.Count() > SquadRuleConstants.MaxPlayersPerTeam);
         }
     }
 }

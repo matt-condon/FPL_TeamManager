@@ -1,22 +1,15 @@
 ﻿using FplClient.Data;
 using FplManager.Application.Services;
 using FplManager.Infrastructure.Constants;
+using FplManager.Infrastructure.Extensions;
 using FplManager.Infrastructure.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
 
-namespace FPLManager.Unit.Tests.Application.Services
+namespace FPLManager.Unit.Tests.Application.Infrastructure.Extensions
 {
-    public class SquadRuleServiceTests
-    {
-        private SquadRuleService _sut;
-
-        [SetUp]
-        public void Setup()
-        {
-            _sut = new SquadRuleService();
-        }
-        
+    public class SquadExtensionsTests
+    {        
         [Test]
         public void IsSquadValid_ShouldReturnFalse_WhereNumberOfPlayersFromTeamIsGreaterThanMaxPlayersPerTeam()
         {
@@ -38,7 +31,7 @@ namespace FPLManager.Unit.Tests.Application.Services
             };
 
             // Act
-            var result = _sut.IsValidSquad(squad);
+            var result = squad.IsValidSquad();
             
             // Assert
             Assert.False(result);
@@ -63,7 +56,7 @@ namespace FPLManager.Unit.Tests.Application.Services
             };
 
             // Act
-            var result = _sut.IsValidSquad(squad);
+            var result = squad.IsValidSquad();
 
             // Assert
             Assert.False(result);
@@ -89,7 +82,7 @@ namespace FPLManager.Unit.Tests.Application.Services
             };
 
             // Act
-            var result = _sut.IsValidSquad(squad);
+            var result = squad.IsValidSquad();
             
             // Assert
             Assert.True(result);

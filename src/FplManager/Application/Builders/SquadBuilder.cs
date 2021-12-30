@@ -8,15 +8,17 @@ using System.Linq;
 
 namespace FplManager.Application.Builders
 {
+    //Builds initial squad
+    //TODO: implement to auto-build
     public class SquadBuilder
     {
-        private readonly SquadRuleService _squadRuleService;
-        private readonly PlayerEvaluationService _evaluationService;
+        private readonly IPlayerEvaluationService _evaluationService;
+        private readonly SquadPositionPlayerLimits _playerLimits;
 
-        public SquadBuilder()
+        public SquadBuilder(IPlayerEvaluationService playerEvaluationService)
         {
-            _squadRuleService = new SquadRuleService();
-            _evaluationService = new PlayerEvaluationService();
+            _evaluationService = playerEvaluationService;
+            _playerLimits = new SquadPositionPlayerLimits();
         }
 
         public Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> BuildTeamByCost(Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>> players, bool isFreeHit)
@@ -50,16 +52,15 @@ namespace FplManager.Application.Builders
             )
         {
             var squad = new Dictionary<FplPlayerPosition, List<EvaluatedFplPlayer>>();
-            var playerLimits = new SquadPositionPlayerLimits();
             var rnd = new Random();
             foreach (var position in playerWishlist) 
             {
-                var positionPlayerLimit = playerLimits.Limits[position.Key];
+                var positionPlayerLimit = _playerLimits.Limits[position.Key];
                 var playersForPosition = position.Value.OrderByDescending(x => GetWeightedRandomEval(EvaluatePlayer(x, isFreeHit), rnd)).Take(positionPlayerLimit).ToList();
                 squad.Add(position.Key, playersForPosition);
             }
 
-            buildSuccesful = _squadRuleService.IsValidSquad(squad);
+            buildSuccesful = squad.IsValidSquad();
             retriesRemaining = retries - 1;
             
             return squad;
